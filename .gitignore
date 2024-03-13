@@ -1,0 +1,34 @@
+# Ignore built files
+/dist/
+/out/
+
+# Ignore node_modules directory
+node_modules/
+
+# Ignore any logs or temporary files
+*.log
+*.tmp
+
+# Ignore environment-specific files
+.env
+
+# Ignore any editor or IDE specific files
+.vscode/
+.idea/
+*.code-workspace
+
+# Ignore TypeScript build configuration file
+tsconfig.json
+
+# Ignore any build output or artifacts
+*.js
+*.js.map
+
+# Ignore any test coverage reports
+coverage/
+
+# Ignore any package-lock files (if using npm)
+package-lock.json
+
+# Ignore yarn lock file (if using yarn)
+yarn.lock
