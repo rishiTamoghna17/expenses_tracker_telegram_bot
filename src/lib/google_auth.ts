@@ -1,5 +1,5 @@
-import axios from "axios";
-import { googleCredential } from "../config";
+import axios from 'axios'
+import { googleCredential } from '../config'
 
 export const getNewUrl = async () => {
   const url = `https://accounts.google.com/o/oauth2/v2/auth?
@@ -11,43 +11,43 @@ export const getNewUrl = async () => {
    state=new_access_token&
    include_granted_scopes=true&
    prompt=consent
-   `;
-  return await axios.get(url);
-};
+   `
+  return await axios.get(url)
+}
 
 export const getNewRefreshToken = async (code: any) => {
   let data = {
     client_id: googleCredential.web.client_id,
     client_secret: googleCredential.web.client_secret,
     code,
-    grant_type: "authorization_code",
+    grant_type: 'authorization_code',
     redirect_uri: googleCredential.web.redirect_uris[0],
-  };
+  }
   const axiosCOnfig = {
-    method: "post",
-    url: "https://oauth2.googleapis.com/token",
+    method: 'post',
+    url: 'https://oauth2.googleapis.com/token',
     headers: {
-      "content-type": "application/x-www-form-urlencoded",
+      'content-type': 'application/x-www-form-urlencoded',
     },
     params: data,
-  };
-  return await axios(axiosCOnfig);
-};
+  }
+  return await axios(axiosCOnfig)
+}
 
-export const getAccessTOken = async(refreshToken: any) => {
+export const getAccessTOken = async (refreshToken: any) => {
   const params = {
     client_id: googleCredential.web.client_id,
     client_secret: googleCredential.web.client_secret,
     refresh_token: refreshToken,
-    grant_type:"refresh_token"
-  };
+    grant_type: 'refresh_token',
+  }
   const axiosCOnfig = {
-    method: "post",
-    url: "https://oauth2.googleapis.com/token",
+    method: 'post',
+    url: 'https://oauth2.googleapis.com/token',
     headers: {
-      "content-type": "application/x-www-form-urlencoded",
+      'content-type': 'application/x-www-form-urlencoded',
     },
     params: params,
-  };
-  return await axios(axiosCOnfig);
-};
+  }
+  return await axios(axiosCOnfig)
+}
