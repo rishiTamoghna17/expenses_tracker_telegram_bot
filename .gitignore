@@ -1,34 +1,31 @@
-# Ignore built files
-/dist/
-/out/
+# Node.js modules
+**/node_modules/
 
-# Ignore node_modules directory
-node_modules/
+# Builded sources
+**/build/
+**/dist/
 
-# Ignore any logs or temporary files
-*.log
-*.tmp
+# Coverage
+**/coverage/
 
-# Ignore environment-specific files
-.env
+# IntelliJ stuffs
+.idea/
 
 # Ignore any editor or IDE specific files
 .vscode/
 .idea/
 *.code-workspace
 
-# Ignore TypeScript build configuration file
-tsconfig.json
+# Parcel cache
+.cache
+.parcel-cache
 
-# Ignore any build output or artifacts
-*.js
-*.js.map
+# Sponsorkit cache
+./images/.cache.json
 
-# Ignore any test coverage reports
-coverage/
+# Environments
+.env
 
-# Ignore any package-lock files (if using npm)
-package-lock.json
-
-# Ignore yarn lock file (if using yarn)
-yarn.lock
+# Archives
+*.tar.gz
+*.tgz

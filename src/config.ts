@@ -1,4 +1,4 @@
-export const BOT_TOKEN = process.env.BOT_TOKEN || '6731596487:AAEeJ-4ns15KTl-fh6dj-U9JFfP7vQluyOE'
+export const BOT_TOKEN = process.env.BOT_TOKEN || '6731596487:AAEeJ-4ns15KTl-fh6dj-U9JFfP7vQluyOE';
 
 export const googleCredential = {
   web: {
@@ -10,4 +10,4 @@ export const googleCredential = {
     client_secret: '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',
     redirect_uris: ['http://localhost:3000/gtoken'],
   },
-}
+};

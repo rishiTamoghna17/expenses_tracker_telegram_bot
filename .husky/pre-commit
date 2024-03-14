@@ -1,0 +1,14 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+# Run ESLint
+if ! npm run lint; then
+  echo "ESLint check failed. Commit aborted."
+  exit 1
+fi
+
+# Run Prettier
+if ! npm run check-format; then
+  echo "Prettier check failed. Commit aborted."
+  exit 1
+fi

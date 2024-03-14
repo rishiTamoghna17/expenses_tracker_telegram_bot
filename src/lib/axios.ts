@@ -1,7 +1,7 @@
-import axios from 'axios'
-import { BOT_TOKEN } from '../config'
+import axios from 'axios';
+import { BOT_TOKEN } from '../config';
 
-const BASE_URL = `https://api.telegram.org/bot${BOT_TOKEN}`
+const BASE_URL = `https://api.telegram.org/bot${BOT_TOKEN}`;
 
 export const getAxiosInstance = () => {
   try {
@@ -11,7 +11,7 @@ export const getAxiosInstance = () => {
           method: 'get',
           url: `${BASE_URL}/${method}`,
           params: params,
-        })
+        });
       },
       post(method: any, data: any) {
         return axios({
@@ -19,10 +19,10 @@ export const getAxiosInstance = () => {
           baseURL: BASE_URL,
           url: `/${method}`,
           data,
-        })
+        });
       },
-    }
+    };
   } catch (error) {
-    console.error('Error from getAxiosInstance:', error)
+    console.error('Error from getAxiosInstance:', error);
   }
-}
+};

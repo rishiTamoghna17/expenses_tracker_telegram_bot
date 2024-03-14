@@ -1,5 +1,5 @@
-import axios from 'axios'
-import { googleCredential } from '../config'
+import axios from 'axios';
+import { googleCredential } from '../config';
 
 export const getNewUrl = async () => {
   const url = `https://accounts.google.com/o/oauth2/v2/auth?
@@ -7,13 +7,13 @@ export const getNewUrl = async () => {
    redirect_uri=${googleCredential.web.redirect_uris[0]}&
    access_type=offline&
    response_type=code&
-   scope=https://www.googleapis.com/auth/spreadsheets&
+   scope=https://www.googleapis.com/auth/spreadsheets.readonly&
    state=new_access_token&
    include_granted_scopes=true&
    prompt=consent
-   `
-  return await axios.get(url)
-}
+   `;
+  return await axios.get(url);
+};
 
 export const getNewRefreshToken = async (code: any) => {
   let data = {
@@ -22,7 +22,7 @@ export const getNewRefreshToken = async (code: any) => {
     code,
     grant_type: 'authorization_code',
     redirect_uri: googleCredential.web.redirect_uris[0],
-  }
+  };
   const axiosCOnfig = {
     method: 'post',
     url: 'https://oauth2.googleapis.com/token',
@@ -30,9 +30,9 @@ export const getNewRefreshToken = async (code: any) => {
       'content-type': 'application/x-www-form-urlencoded',
     },
     params: data,
-  }
-  return await axios(axiosCOnfig)
-}
+  };
+  return await axios(axiosCOnfig);
+};
 
 export const getAccessTOken = async (refreshToken: any) => {
   const params = {
@@ -40,7 +40,7 @@ export const getAccessTOken = async (refreshToken: any) => {
     client_secret: googleCredential.web.client_secret,
     refresh_token: refreshToken,
     grant_type: 'refresh_token',
-  }
+  };
   const axiosCOnfig = {
     method: 'post',
     url: 'https://oauth2.googleapis.com/token',
@@ -48,6 +48,6 @@ export const getAccessTOken = async (refreshToken: any) => {
       'content-type': 'application/x-www-form-urlencoded',
     },
     params: params,
-  }
-  return await axios(axiosCOnfig)
-}
+  };
+  return await axios(axiosCOnfig);
+};
