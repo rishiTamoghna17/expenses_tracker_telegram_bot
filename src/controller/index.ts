@@ -8,7 +8,7 @@ export const handler = async (req: Request, method?: string) => {
       if (req.url === '/test') {
         const data = await getNewUrl();
         console.log('getNewUrl------------>>>', data);
-          const parseUrl = data.config.url?.replace(/\s/g, '');
+            const parseUrl = data.config.url?.replace(/\s/g, '');
         return parseUrl;
       }
       if (req.url.indexOf('/gtoken') > -1) {
