@@ -19,6 +19,7 @@
   "scripts": {
     "format": "prettier --ignore-path .gitignore --write \"**/*.+(js|ts|json)\"",
     "lint": "eslint --ignore-path .eslintignore --ext .js,.ts",
+    "check-format": "prettier --ignore-path .gitignore --check \"**/*.+(js|ts|json)\"",
     "test": " mocha -require ts-node/register 'test/**.ts'",
     "postinstall": "husky install",
     "build": "npx tsc",

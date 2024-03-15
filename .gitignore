@@ -16,6 +16,7 @@
 .idea/
 *.code-workspace
 
+*.json
 # Parcel cache
 .cache
 .parcel-cache
