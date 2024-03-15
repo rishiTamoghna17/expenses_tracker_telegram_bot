@@ -3,14 +3,27 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.ts",
+  "nodemonConfig": {
+    "watch": [
+      "src"
+    ],
+    "ext": "ts",
+    "ignore": [
+      "*.test.ts"
+    ],
+    "delay": "3",
+    "execMap": {
+      "ts": "ts-node"
+    }
+  },
   "scripts": {
-    "format": "prettier --ignore-path .gitignore --write \"src/**/*.ts\"",
-    "lint": "eslint --ignore-path .eslintignore --ext .ts",
+    "format": "prettier --ignore-path .gitignore --write \"**/*.+(js|ts|json)\"",
+    "lint": "eslint --ignore-path .eslintignore --ext .js,.ts",
     "test": " mocha -require ts-node/register 'test/**.ts'",
     "postinstall": "husky install",
     "build": "npx tsc",
-    "start": "npx tsc && node dist/index.js",
-    "dev": "nodemon --exec npx ts-node src/index.ts"
+    "start": "npx tsc && nodemon dist/index.js",
+    "dev": "nodemon src/index.ts"
   },
   "husky": {
     "hooks": {
@@ -34,7 +47,7 @@
     "typescript": "^5.4.2"
   },
   "dependencies": {
-    "@google-cloud/local-auth": "^2.1.0",
+    "@google-cloud/local-auth": "^2.1.1",
     "axios": "^1.6.7",
     "body-parser": "^1.20.2",
     "cors": "^2.8.5",
