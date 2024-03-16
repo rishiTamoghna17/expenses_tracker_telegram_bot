@@ -1,7 +1,9 @@
 import { getNewRefreshToken, getNewUrl, getAccessTOken } from '../lib/google_auth';
 import { handleMessage } from './bot';
 import { Request } from 'express';
-import { createSpreadsheet } from './googleSheet';
+import { readSheetValues } from './googleSheet';
+import { supabase } from '../lib/supabaseClient';
+import { getRefreshTokenFromDb, updateRefreshTokenInDB } from './dbHandler';
 export const handler = async (req: Request, method?: string) => {
   try {
     if (method === 'GET') {
@@ -22,21 +24,35 @@ export const handler = async (req: Request, method?: string) => {
       }
       if (req.url === '/get-access-token') {
         const refreshtoken =
-          '1//0gcAiOQqdeWGjCgYIARAAGBASNwF-L9IrvA52nlxDdLyEYTKZ5unnDyWBWK-EqHYxp_XiicTN5-uBDPToS7o1po0VVR1rNzahpY0';
+          '1//0gdNsGgqqxY8gCgYIARAAGBASNwF-L9IryDYomYp9i_Ux3Sg1yMg3yenFmT4qYNT8xpzLbbut0lSKM-D-5sREgjNQR3q947yeuO0';
         const accessTokenData = await getAccessTOken(refreshtoken);
         return accessTokenData.data;
       }
       if (req.url === '/speadsheet') {
         const access_token =
-          'ya29.a0Ad52N39CpZ8VhamDBLblPeYKF2ETZn8jC45YPQvJpQ2gZpqSHDUogHa_6W1od4FwZJXf2ZJSFLCApoaq2Mmk-Np-nleTYjL9K9eqbOZBK8KaRoWjdY5QKcS_hdhIicR3CEX1cmxqGsQxHFVUOosREwZMJP6_LgOzNKCBaCgYKAToSARISFQHGX2MiJBmYBCfkQQcEgKApvjmBbg0171';
-        var jdn = '';
-        // const spreadsheetId = "15EU70BC_DuAa4V-GFQ5ni7ZiOf7bF6Ey0NP2aS1vRYM";
-        const sheetName = 'test_spsheet';
-        const data = await createSpreadsheet(sheetName, access_token);
-        console.log('readSheetValues---------->', JSON.stringify(data, null, 2));
-        return JSON.stringify(data, null, 2);
+          'ya29.a0Ad52N3-PHoX3Ybh_SkWFJSwxM-obipztlkGigNU6Yn4NKKpe6kzY4pgRNR1Jn_GK5ZvGY9ERfnwAZtQFZor4Ni-bgVyUiKxrDstbB2-hXH-wZ4GgfP7kim0LAeYGjyv2zT0MI3F9AQPC__nv1xvxXQaU27fMwgwpO_ZkaCgYKAU4SARISFQHGX2Mib-gsQWJaPMM68RjmjHM_Dw0171';
+        // var jdn = '';
+        const spreadsheetId = '15EU70BC_DuAa4V-GFQ5ni7ZiOf7bF6Ey0NP2aS1vRYM';
+        // const sheetName = 'test_spsheet';
+        const data = await readSheetValues(spreadsheetId, access_token);
+        console.log('readSheetValues---------->', data && data.data);
+        return data && data.data;
       }
-      return 'unknown get';
+      if (req.url === '/testSuparBase') {
+        console.log('supabase---------->', supabase);
+        return 'supabase client detected';
+      }
+      if (req.url === '/updateRefreshTokenInDB') {
+        updateRefreshTokenInDB('1234567890');
+        console.log('updateRefreshTokenInDB---------->');
+        return 'update Refresh Token In DB!!!!!!';
+      }
+      if (req.url === '/getRefreshTokenFromDb') {
+        const data = await getRefreshTokenFromDb();
+        console.log('getRefreshTokenFromDb---------->', data?.data);
+        return data?.data;
+      }
+      return 'unknown get-----';
     }
     const body = req.body;
 

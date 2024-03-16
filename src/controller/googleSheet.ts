@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { google } from 'googleapis';
 const { authenticate } = require('@google-cloud/local-auth');
 export async function createSpreadsheet(title: string, access_token: string) {
@@ -24,26 +25,31 @@ export async function createSpreadsheet(title: string, access_token: string) {
 // Function to read spreadsheet values from a sheet
 export async function readSheetValues(
   spreadsheetId: string,
-  sheetName: string,
   access_token: string,
+  sheetName?: string,
 ) {
-  console.log('access_token:', access_token);
-  console.log('sheetName:', sheetName);
-  console.log('spreadsheetId:', spreadsheetId);
-
-  const sheets = google.sheets({ version: 'v4', auth: access_token });
-  console.log('sheets', sheets, '||................end..................||');
   try {
-    const response = await sheets.spreadsheets.values.get({
-      spreadsheetId,
-      range: `${sheetName}!A:Z`, // Adjust range as needed
-    });
+    console.log('access_token:', access_token);
+    console.log('sheetName:', sheetName);
+    console.log('spreadsheetId:', spreadsheetId);
+    const range = 'A2:B2'; // Adjust range as needed
 
-    console.log('Sheet values:', response?.data?.values);
-    return response?.data?.values;
-  } catch (error) {
-    console.error('Error reading sheet values:', error);
-    //   throw error; // Re-throw for handling in your application
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}`;
+    const axiosCOnfig = {
+      method: 'get',
+      url: url,
+      headers: {
+        Authorization: 'Bearer ' + access_token,
+        Accept: 'application/json',
+      },
+      params: {
+        ranges: range,
+      },
+    };
+
+    return await axios(axiosCOnfig);
+  } catch (err) {
+    console.log('problem exios call readSheetValues:-----', err);
   }
 }
 

@@ -1,5 +1,5 @@
 import express, { Express, Request, Response } from 'express';
-import dotenv from 'dotenv';
+import * as dotenv from 'dotenv';
 import bodyParser from 'body-parser';
 import { handler } from './controller';
 import cors from 'cors';
