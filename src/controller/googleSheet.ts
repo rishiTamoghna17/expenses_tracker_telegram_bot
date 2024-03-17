@@ -26,14 +26,10 @@ export async function createSpreadsheet(title: string, access_token: string) {
 export async function readSheetValues(
   spreadsheetId: string,
   access_token: string,
+  range: string,
   sheetName?: string,
 ) {
   try {
-    console.log('access_token:', access_token);
-    console.log('sheetName:', sheetName);
-    console.log('spreadsheetId:', spreadsheetId);
-    const range = 'A2:B2'; // Adjust range as needed
-
     const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}`;
     const axiosCOnfig = {
       method: 'get',
