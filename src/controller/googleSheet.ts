@@ -1,21 +1,46 @@
 import axios from 'axios';
-import { google } from 'googleapis';
-const { authenticate } = require('@google-cloud/local-auth');
-export async function createSpreadsheet(title: string, access_token: string) {
-  const sheets = google.sheets({ version: 'v4', auth: access_token });
 
+export async function createSpreadsheet(title: string, access_token: string) {
+  // const sheets = google.sheets({ version: 'v4', auth: access_token });
+  const headers = ['Date', 'Description', 'Category', 'Amount', 'Payment Method'];
+  const data = [
+    ['2024-03-18', 'Lunch', 'Food', '10.00', 'Cash'],
+    ['2024-03-18', 'Coffee', 'Beverage', '5.00', 'Card'],
+  ];
   try {
-    const response = await sheets.spreadsheets.create({
-      requestBody: {
-        properties: { title },
+    const url = 'https://sheets.googleapis.com/v4/spreadsheets';
+    const asiosData = {
+      properties: {
+        title: title,
       },
-    });
-    console.log(
-      'Spreadsheet created:',
-      response.data.spreadsheetId,
-      '||................end..................||',
-    );
-    return response.data.spreadsheetId;
+      sheets: [
+        {
+          properties: {
+            title: 'Daily Expenses', // Sheet title
+          },
+          data: [
+            // Row 1 (headers)
+            headers.map((header) => ({ userEnteredValue: { stringValue: header } })),
+            // Row 2 (data)
+            ...data.map((row) =>
+              row.map((value) => ({ userEnteredValue: { stringValue: value } })),
+            ),
+          ],
+        },
+      ],
+    };
+
+    const axiosCOnfig = {
+      method: 'post',
+      url: url,
+      headers: {
+        Authorization: 'Bearer ' + access_token,
+        Accept: 'application/json',
+      },
+      asiosData,
+    };
+    const response = await axios(axiosCOnfig);
+    return response.data;
   } catch (error) {
     console.error('Error creating spreadsheet:', error);
     //   throw error; // Re-throw for handling in your application
@@ -42,8 +67,9 @@ export async function readSheetValues(
         ranges: range,
       },
     };
-
-    return await axios(axiosCOnfig);
+    const res = await axios(axiosCOnfig);
+    console.log('res-->', res.data);
+    return res.data && res;
   } catch (err) {
     console.log('problem exios call readSheetValues:-----', err);
   }

@@ -14,6 +14,7 @@ export const handler = async (req: Request, method?: string) => {
       //   return parseUrl;
       // }
       if (req.path === '/gtoken') {
+        console.log('get object->>>>>>', req);
         const data = req.query;
         const code = data.code;
         const refreshtoken = await getNewRefreshToken(code);

@@ -11,7 +11,7 @@ export const updateRefreshTokenInDB = async (token: string) => {
         },
       ])
       .select();
-
+    console.log('completed updateRefreshTokenInDB----------');
     if (error) throw error;
     return data;
   } catch (error) {
@@ -37,7 +37,7 @@ export const getRefreshTokenFromDb = async () => {
     }
 
     const latestRefreshToken = data[0].value;
-    console.log('Latest refresh token:---------', latestRefreshToken);
+    // console.log('Latest refresh token:---------', latestRefreshToken);
     return latestRefreshToken;
   } catch (error) {
     console.log('error to get refresh token from db', error);
