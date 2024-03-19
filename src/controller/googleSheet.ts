@@ -2,30 +2,23 @@ import axios from 'axios';
 
 export async function createSpreadsheet(title: string, access_token: string) {
   // const sheets = google.sheets({ version: 'v4', auth: access_token });
-  const headers = ['Date', 'Description', 'Category', 'Amount', 'Payment Method'];
-  const data = [
-    ['2024-03-18', 'Lunch', 'Food', '10.00', 'Cash'],
-    ['2024-03-18', 'Coffee', 'Beverage', '5.00', 'Card'],
-  ];
+  // const rowHeaders = ['Date', 'Description', 'Category', 'Amount', 'Payment Method'];
+  // const dataSet = [
+  //   ['2024-03-18', 'Lunch', 'Food', '10.00', 'Cash'],
+  //   ['2024-03-18', 'Coffee', 'Beverage', '5.00', 'Card'],
+  // ];
+  console.log('access_token--------->', access_token);
   try {
     const url = 'https://sheets.googleapis.com/v4/spreadsheets';
     const asiosData = {
       properties: {
-        title: title,
+        title: 'latest_sheet-1',
       },
       sheets: [
         {
           properties: {
-            title: 'Daily Expenses', // Sheet title
+            title: 'xyz', // Sheet title
           },
-          data: [
-            // Row 1 (headers)
-            headers.map((header) => ({ userEnteredValue: { stringValue: header } })),
-            // Row 2 (data)
-            ...data.map((row) =>
-              row.map((value) => ({ userEnteredValue: { stringValue: value } })),
-            ),
-          ],
         },
       ],
     };
@@ -37,7 +30,7 @@ export async function createSpreadsheet(title: string, access_token: string) {
         Authorization: 'Bearer ' + access_token,
         Accept: 'application/json',
       },
-      asiosData,
+      data: asiosData,
     };
     const response = await axios(axiosCOnfig);
     return response.data;
