@@ -39,7 +39,134 @@ export async function createSpreadsheet(title: string, access_token: string) {
     //   throw error; // Re-throw for handling in your application
   }
 }
+export async function editSpreadsheet(spreadsheetId: string, access_token: string) {
+  try {
+    const headerRowIndex = 0; // Assuming you want the first row to be the header
+    const headerRange = `A${headerRowIndex + 1}:F${headerRowIndex + 1}`; // Range for the header row
 
+    const requests = [
+      // Request to set header row text, freeze the first row, and format background color
+      {
+        // mergeCells: {  //MARGE CELLS
+        //   range: {
+        //     sheetId: 501371124,
+        //     startRowIndex: 0,
+        //     endRowIndex:  1,
+        //     startColumnIndex: 0,
+        //     endColumnIndex:  5
+        //   },
+        //   mergeType: "MERGE_ALL"
+        // },
+
+        // updateSheetProperties: {   // create new colorful sheet with 1000 rows and fix 1st row
+        //   properties: {
+        //     sheetId: 501371124,
+        //     index: 1,
+        //     title: 'marge-table-1',
+        //     gridProperties: {
+        //       rowCount: 1000,
+        //       columnCount:100,
+        //       frozenRowCount: 1
+        //     },
+        //     tabColor: {
+        //       red: 1,
+        //       green: 1,
+        //     },
+        //   },
+        //   fields:"*"
+        // },
+
+        // addConditionalFormatRule: {    // contidion sheet to coloring write
+        //   rule: {
+        //     ranges: [
+        //       {
+        //         sheetId: 501371124,
+        //         startRowIndex: 0,
+        //         endRowIndex: 1,
+        //         startColumnIndex: 0,
+        //         endColumnIndex: 5,
+        //       },
+        //     ],
+        //     booleanRule: {
+        //       condition: {
+        //         type: 'CUSTOM_FORMULA',
+        //         values: [
+        //           {
+        //             userEnteredValue: '=A1>5',
+        //           },
+        //         ],
+        //       },
+        //       format: {
+        //         backgroundColor: {
+        //           red: 1,
+        //           green: 0.5,
+        //           blue: 0,
+        //         },
+        //       },
+        //     },
+        //   },
+        // },
+
+        updateCells: {
+          //   //update name
+          range: {
+            sheetId: 501371124,
+            startRowIndex: 0,
+            // endRowIndex: ,
+            startColumnIndex: 0,
+            endColumnIndex: 5,
+          },
+          rows: [
+            {
+              values: [
+                {
+                  userEnteredValue: { stringValue: 'expoenses claculator jbalal' },
+                  textFormatRuns: {
+                    startIndex: 0,
+                    format: {
+                      fontFamily: 'sans-serif',
+                      fontSize: 20,
+                      bold: true,
+                      italic: true,
+                      underline: true,
+                    },
+                  },
+                },
+              ],
+            },
+          ],
+          fields: '*',
+        },
+
+        // rowData: rowHeaders.map((header) => ({ values: [{ userEnteredValue: { stringValue: header } }] })),
+      },
+    ];
+
+    const batchUpdateUrl = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}:batchUpdate`;
+    const batchUpdateConfig = {
+      method: 'post',
+      url: batchUpdateUrl,
+      headers: {
+        Authorization: 'Bearer ' + access_token,
+        Accept: 'application/json',
+      },
+      data: {
+        requests,
+      },
+    };
+
+    const updateResponse = await axios(batchUpdateConfig);
+    console.log('updateResponse---------', updateResponse);
+    if (updateResponse.status === 200) {
+      console.log('Sheet formatting updated successfully!');
+      return updateResponse;
+    } else {
+      console.error('Error updating sheet formatting--:', updateResponse);
+    }
+  } catch (error) {
+    console.error('Error updating sheet formatting:', error);
+  }
+}
 // Function to read spreadsheet values from a sheet
 export async function readSheetValues(
   spreadsheetId: string,
@@ -61,7 +188,7 @@ export async function readSheetValues(
       },
     };
     const res = await axios(axiosCOnfig);
-    console.log('res-->', res.data);
+    console.log('res of readsheetvalues-->', res.data);
     return res.data && res;
   } catch (err) {
     console.log('problem exios call readSheetValues:-----', err);
