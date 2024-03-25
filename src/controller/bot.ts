@@ -1,8 +1,9 @@
 import { getAxiosInstance } from '../lib/axios';
-import { getAccessTOken, getNewUrl } from '../lib/google_auth';
+import { getGoogleAuth, getNewUrl } from '../lib/google_auth';
 import { checkAccessToken } from '../utils';
 import { getRefreshTokenFromDb } from './dbHandler';
 import { createSpreadsheet, editSpreadsheet, readSheetValues } from './googleSheet';
+import { getFromSheetsUinggGoogleSdk } from './googlesheet-sdk';
 export const chat_id = '1149737484';
 export const sendMessage = async (messageObject: any, messageText: string) => {
   try {
@@ -42,13 +43,22 @@ export const handleMessage = async (messageObject: any) => {
 
         case 'get_spread_sheet':
           const accessTokenData = await checkAccessToken(messageObject);
-          const spreadsheetId = '1kAG7L2PwjpOv1qUptalc93QlXgrXIMtx-MCVP4CZ1eU';
-          const range = 'A2:B2';
-          const getSpreadsheet = await readSheetValues(spreadsheetId, accessTokenData, range);
+
+          // const spreadsheetId = '1kAG7L2PwjpOv1qUptalc93QlXgrXIMtx-MCVP4CZ1eU';
+          // const range = 'A2:B2';
+          // const getSpreadsheet = await readSheetValues(spreadsheetId, accessTokenData, range);
+          const getGoogleAuthData = getGoogleAuth(accessTokenData);
+          const req = {
+            range: 'A2:B2',
+            spreadsheetId: '15EU70BC_DuAa4V-GFQ5ni7ZiOf7bF6Ey0NP2aS1vRYM',
+            auth: getGoogleAuthData,
+          };
+          const getSpreadsheet = await getFromSheetsUinggGoogleSdk(req);
           if (!getSpreadsheet) {
             return sendMessage(messageObject, 'you are not othorized to do that!!!!');
           }
-          return await sendMessage(messageObject, getSpreadsheet?.data?.spreadsheetUrl);
+          console.log('getSpreadsheet---->>', getSpreadsheet, 'end-----------\\');
+          return await sendMessage(messageObject, 'getSpreadsheet?.data?.spreadsheetUrl');
         case 'test':
           const spreadSheetId = '1kAG7L2PwjpOv1qUptalc93QlXgrXIMtx-MCVP4CZ1eU';
           const accessTokn = await checkAccessToken(messageObject);

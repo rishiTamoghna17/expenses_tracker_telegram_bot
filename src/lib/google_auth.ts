@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { googleCredential } from '../config';
-
+import { OAuth2Client } from 'google-auth-library';
 export const getNewUrl = async () => {
   try {
     const url = `https://accounts.google.com/o/oauth2/v2/auth?
@@ -58,5 +58,15 @@ export const getAccessTOken = async (refreshToken: any) => {
     return data.data.access_token;
   } catch (err) {
     console.log('err in getAccessTOken', err);
+  }
+};
+
+export const getGoogleAuth = (accessToken: string) => {
+  try {
+    const client = new OAuth2Client();
+    client.setCredentials({ access_token: accessToken });
+    return client;
+  } catch (err) {
+    console.log('err in getGoogleAuth', err);
   }
 };
