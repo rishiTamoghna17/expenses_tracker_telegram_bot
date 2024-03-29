@@ -1,23 +1,24 @@
 import axios from 'axios';
 
-export async function createSpreadsheet(title: string, access_token: string) {
+export async function createSpreadsheet(req:any) {
+  const {title, access_token,sheetTitle}=req as {title: string, access_token: string, sheetTitle:string}
   // const sheets = google.sheets({ version: 'v4', auth: access_token });
   // const rowHeaders = ['Date', 'Description', 'Category', 'Amount', 'Payment Method'];
   // const dataSet = [
   //   ['2024-03-18', 'Lunch', 'Food', '10.00', 'Cash'],
   //   ['2024-03-18', 'Coffee', 'Beverage', '5.00', 'Card'],
   // ];
-  console.log('access_token--------->', access_token);
+  // console.log('access_token--------->', access_token);
   try {
     const url = 'https://sheets.googleapis.com/v4/spreadsheets';
     const asiosData = {
       properties: {
-        title: 'latest_sheet-1',
+        title: title,
       },
       sheets: [
         {
           properties: {
-            title: 'xyz', // Sheet title
+            title: sheetTitle, // Sheet title
           },
         },
       ],

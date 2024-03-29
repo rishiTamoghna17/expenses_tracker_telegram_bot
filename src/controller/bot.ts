@@ -3,7 +3,7 @@ import { getGoogleAuth, getNewUrl } from '../lib/google_auth';
 import { checkAccessToken } from '../utils';
 import { getRefreshTokenFromDb } from './dbHandler';
 import { createSpreadsheet, editSpreadsheet, readSheetValues } from './googleSheet';
-import { getFromSheetsUinggGoogleSdk } from './googlesheet-sdk';
+import { editSpreadsheetUingGoogleSdk, getFromSheetsUingGoogleSdk } from './googlesheet-sdk';
 export const chat_id = '1149737484';
 export const sendMessage = async (messageObject: any, messageText: string) => {
   try {
@@ -38,7 +38,12 @@ export const handleMessage = async (messageObject: any) => {
 
         case 'creat_spread_sheet':
           const accessToken = await checkAccessToken(messageObject);
-          const newSpreadsheet = await createSpreadsheet('new_TEST_sheet', accessToken);
+          const reqe = {
+            title: 'new_TEST_sheet',
+            access_token: accessToken,
+            sheetTitle: 'test_spsheet',
+          };
+          const newSpreadsheet = await createSpreadsheet(reqe);
           return sendMessage(messageObject, newSpreadsheet.spreadsheetId);
 
         case 'get_spread_sheet':
@@ -53,17 +58,29 @@ export const handleMessage = async (messageObject: any) => {
             spreadsheetId: '15EU70BC_DuAa4V-GFQ5ni7ZiOf7bF6Ey0NP2aS1vRYM',
             auth: getGoogleAuthData,
           };
-          const getSpreadsheet = await getFromSheetsUinggGoogleSdk(req);
+          const getSpreadsheet = await getFromSheetsUingGoogleSdk(req);
           if (!getSpreadsheet) {
             return sendMessage(messageObject, 'you are not othorized to do that!!!!');
           }
           console.log('getSpreadsheet---->>', getSpreadsheet, 'end-----------\\');
           return await sendMessage(messageObject, 'getSpreadsheet?.data?.spreadsheetUrl');
+
+        case 'test-1':
+        // const spreadSheetId = '1kAG7L2PwjpOv1qUptalc93QlXgrXIMtx-MCVP4CZ1eU';
+        // const accessTokn = await checkAccessToken(messageObject);
+        // const test = await editSpreadsheet(spreadSheetId, accessTokn);
+        // console.log('test------------>', test?.data);
+        // if (!test) {
+        //   return sendMessage(messageObject, 'test not found');
+        // }
+        // return sendMessage(messageObject, test?.data?.spreadsheetId);
+
         case 'test':
           const spreadSheetId = '1kAG7L2PwjpOv1qUptalc93QlXgrXIMtx-MCVP4CZ1eU';
           const accessTokn = await checkAccessToken(messageObject);
-          const test = await editSpreadsheet(spreadSheetId, accessTokn);
-          console.log('test------------>', test?.data);
+          const rex = { spreadSheetId: spreadSheetId, accessTokn: accessTokn, sheetId: 1469645569 };
+          const test = await editSpreadsheetUingGoogleSdk(rex);
+          console.log('test------------>', test);
           if (!test) {
             return sendMessage(messageObject, 'test not found');
           }
