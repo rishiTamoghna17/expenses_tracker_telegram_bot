@@ -29,4 +29,3 @@ app.listen(port, () => {
 // https://0578-203-109-79-185.ngrok-free.app
 // htts://api.telegram.org/bot${process.env.BOT_TOKEN}/${method}
 // https://api.telegram.org/bot6731596487:AAEeJ-4ns15KTl-fh6dj-U9JFfP7vQluyOE/setWebhook?url=https://c0cb-175-100-133-62.ngrok-free.app
-

@@ -1,7 +1,11 @@
 import axios from 'axios';
 
-export async function createSpreadsheet(req:any) {
-  const {title, access_token,sheetTitle}=req as {title: string, access_token: string, sheetTitle:string}
+export async function createSpreadsheet(req: any) {
+  const { title, access_token, sheetTitle } = req as {
+    title: string;
+    access_token: string;
+    sheetTitle: string;
+  };
   // const sheets = google.sheets({ version: 'v4', auth: access_token });
   // const rowHeaders = ['Date', 'Description', 'Category', 'Amount', 'Payment Method'];
   // const dataSet = [
