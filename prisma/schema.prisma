@@ -1,0 +1,17 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+datasource db {
+  provider = "postgres"
+  //url      = env("DATABASE_URL")
+  url = "postgres://postgres.jltvokvigearqqnkqpyh:fKL8iDPfVDROEQ8r@aws-0-ap-southeast-1.pooler.supabase.com:5432/postgres"
+}
+model User { // Use PascalCase for model names
+  id        Int      @id @default(autoincrement())
+  key       String 
+  value     String
+  createdAt DateTime @default(now()) // Use `now()` for automatic timestamp
+}
