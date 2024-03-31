@@ -1,8 +1,15 @@
 import { getAxiosInstance } from '../lib/axios';
 import { getGoogleAuth, getNewUrl } from '../lib/google_auth';
-import { TOdayDate, checkAccessToken } from '../utils';
+import { TOdayDate, checkAccessToken, valuesFromMessage } from '../utils';
 import { getRefreshTokenFromDb } from './dbHandler';
-import { appendRow, createSpreadsheet, editSpreadsheet, readSheetValues } from './googleSheet';
+import {
+  appendRow,
+  createSpreadsheet,
+  editSpreadsheet,
+  getAllSheetIds,
+  getLatestSheetId,
+  readSheetValues,
+} from './googleSheet';
 import {
   editSpreadsheetUingGoogleSdk,
   getFromSheetsUingGoogleSdk,
@@ -30,7 +37,7 @@ export const handleMessage = async (messageObject: any) => {
   try {
     const messageText = messageObject.text || '';
     if (messageText[0] === '/') {
-      const commend = messageText.substr(1);
+      const commend = messageText.substr(1).split(' ')[0];
       switch (commend) {
         case 'start':
           return sendMessage(messageObject, 'Hello, how can I help you?');
@@ -41,14 +48,29 @@ export const handleMessage = async (messageObject: any) => {
           return parseUrl && (await sendMessage(messageObject, parseUrl));
 
         case 'creat_spread_sheet':
+          sendMessage(messageObject, 'creating Spreadsheet..... just wait a second.........');
           const accessToken = await checkAccessToken(messageObject);
           const reqe = {
             title: 'new_TEST_sheet',
             access_token: accessToken,
-            sheetTitle: 'test_spsheet',
+            sheetTitle: 'test_spread_sheet',
           };
           const newSpreadsheet = await createSpreadsheet(reqe);
-          return sendMessage(messageObject, newSpreadsheet.spreadsheetId);
+          const spreadsheetId1 = newSpreadsheet.spreadsheetId;
+          const latestSheet = await getLatestSheetId(spreadsheetId1, accessToken);
+          const sheetTitle = 'test_spread_sheet';
+          latestSheet &&
+            (await editSpreadsheet(spreadsheetId1, accessToken, latestSheet, sheetTitle));
+          const parameter = {
+            spreadsheetId: spreadsheetId1,
+            accessToken: accessToken,
+            range: `${sheetTitle}!A:F`,
+            values: [['Data', 'Category', 'Amount', 'Payment Method', 'Daily expenses']],
+          };
+          const secondRow = await appendRow(parameter);
+          console.log('secondRow---->>', secondRow);
+          sendMessage(messageObject, 'Spreadsheet created successfully!!!!');
+          return sendMessage(messageObject, newSpreadsheet.spreadsheetUrl);
 
         case 'get_spread_sheet':
           const accessTokenData = await checkAccessToken(messageObject);
@@ -69,15 +91,35 @@ export const handleMessage = async (messageObject: any) => {
           console.log('getSpreadsheet---->>', getSpreadsheet, 'end-----------\\');
           return await sendMessage(messageObject, 'getSpreadsheet?.data?.spreadsheetUrl');
 
+        case 'new':
+          const spreadSheetId = '1PrlC-OZfMdIeL_Czf7ScphddKM3Fs9Q8glZ634RgSsA';
+          const accessTokn = await checkAccessToken(messageObject);
+          const value = valuesFromMessage(messageObject);
+
+          console.log('value---------->', value);
+          const range = 'marge-table-first!A:F';
+          const rex = {
+            spreadsheetId: spreadSheetId,
+            accessToken: accessTokn,
+            range: range,
+            values: [value],
+          };
+          const test = await appendRow(rex);
+          console.log('test------------>', test);
+          if (!test) {
+            return sendMessage(messageObject, 'test not found');
+          }
+          return sendMessage(messageObject, 'data updated successfully');
+
         // case 'test':
         // const spreadSheetId = '1PrlC-OZfMdIeL_Czf7ScphddKM3Fs9Q8glZ634RgSsA';
         // const accessTokn = await checkAccessToken(messageObject);
-        // const test = await editSpreadsheet(spreadSheetId, accessTokn,386568529);
-        // console.log('test------------>', test?.data);
+        // const test = await getLatestSheetId(spreadSheetId, accessTokn);
+        // console.log('test------------>', test);
         // if (!test) {
         //   return sendMessage(messageObject, 'test not found');
         // }
-        // return sendMessage(messageObject, test?.data?.spreadsheetId);
+        // return sendMessage(messageObject, "test run successfully");
 
         // case 'test-2':
         //   const spreadSheetId = '1PrlC-OZfMdIeL_Czf7ScphddKM3Fs9Q8glZ634RgSsA';
@@ -100,25 +142,6 @@ export const handleMessage = async (messageObject: any) => {
         //     return sendMessage(messageObject, 'test not found');
         //   }
         //   return sendMessage(messageObject, "data updated successfully");
-
-        case 'test':
-          const spreadSheetId = '1PrlC-OZfMdIeL_Czf7ScphddKM3Fs9Q8glZ634RgSsA';
-          const accessTokn = await checkAccessToken(messageObject);
-          const date = TOdayDate();
-          const values = [[date, 'Groceries', '7000', 'online', 'Daily expenses']];
-          const range = 'marge-table-first!A:F:append';
-          const rex = {
-            spreadsheetId: spreadSheetId,
-            accessToken: accessTokn,
-            range: range,
-            values: values,
-          };
-          const test = await appendRow(rex);
-          console.log('test------------>', test);
-          if (!test) {
-            return sendMessage(messageObject, 'test not found');
-          }
-          return sendMessage(messageObject, 'data updated successfully');
 
         default:
           return sendMessage(messageObject, "I don't understand you");

@@ -48,74 +48,89 @@ export async function editSpreadsheet(
   spreadsheetId: string,
   access_token: string,
   sheetId: number,
+  sheetTitle: string,
 ) {
   try {
-    const requests = [
+    const requestsForUpdateSheetProperties = [
       // Request to set header row text, freeze the first row, and format background color
       {
-        // updateSheetProperties: {
-        //   // create new colorful sheet name with 1000 rows and fix 1st row
-        //   properties: {
-        //     sheetId: sheetId,
-        //     index: 1,
-        //     title: 'marge-table-first',
-        //     gridProperties: {
-        //       rowCount: 1000,
-        //       columnCount: 100,
-        //       frozenRowCount: 2,
-        //     },
-        //     tabColor: {
-        //       red: 1,
-        //       green: 1,
-        //     },
-        //   },
-        //   fields: '*',
-        // },
+        updateSheetProperties: {
+          // create new colorful sheet name with 1000 rows and fix 1st row
+          properties: {
+            sheetId: sheetId,
+            index: 1,
+            title: sheetTitle,
+            gridProperties: {
+              rowCount: 1000,
+              columnCount: 100,
+              frozenRowCount: 2,
+            },
+            tabColor: {
+              red: 1,
+              green: 1,
+            },
+          },
+          fields: '*',
+        },
+      },
+    ];
+    const requestsFormergeCells = [
+      // Request to set header row text, freeze the first row, and format background color
+      {
+        mergeCells: {
+          //MARGE CELLS
+          range: {
+            sheetId: sheetId,
+            startRowIndex: 0,
+            endRowIndex: 1,
+            startColumnIndex: 0,
+            endColumnIndex: 5,
+          },
+          mergeType: 'MERGE_ALL',
+        },
+      },
+    ];
 
-        // mergeCells: {
-        //   //MARGE CELLS
-        //   range: {
-        //     sheetId: sheetId,
-        //     startRowIndex: 0,
-        //     endRowIndex: 1,
-        //     startColumnIndex: 0,
-        //     endColumnIndex: 5,
-        //   },
-        //   mergeType: 'MERGE_ALL',
-        // },
+    const requestsForAddConditionalFormatRule = [
+      // Request to set header row text, freeze the first row, and format background color
+      {
+        addConditionalFormatRule: {
+          // contidion sheet to coloring background
+          rule: {
+            ranges: [
+              {
+                sheetId: sheetId,
+                startRowIndex: 0,
+                endRowIndex: 1,
+                startColumnIndex: 0,
+                endColumnIndex: 5,
+              },
+            ],
+            booleanRule: {
+              condition: {
+                type: 'CUSTOM_FORMULA',
+                values: [
+                  {
+                    userEnteredValue: '=A1>5',
+                  },
+                ],
+              },
+              format: {
+                backgroundColor: {
+                  red: 1,
+                  green: 0.5,
+                  blue: 0,
+                },
+              },
+            },
+          },
+        },
+      },
+    ];
 
-        // addConditionalFormatRule: {
-        //   // contidion sheet to coloring background
-        //   rule: {
-        //     ranges: [
-        //       {
-        //         sheetId: sheetId,
-        //         startRowIndex: 0,
-        //         endRowIndex: 1,
-        //         startColumnIndex: 0,
-        //         endColumnIndex: 5,
-        //       },
-        //     ],
-        //     booleanRule: {
-        //       condition: {
-        //         type: 'CUSTOM_FORMULA',
-        //         values: [
-        //           {
-        //             userEnteredValue: '=A1>5',
-        //           },
-        //         ],
-        //       },
-        //       format: {
-        //         backgroundColor: {
-        //           red: 1,
-        //           green: 0.5,
-        //           blue: 0,
-        //         },
-        //       },
-        //     },
-        //   },
-        // },
-
+    const requestsForUpdateCells = [
+      // Request to set header row text, freeze the first row, and format background color
+      {
         updateCells: {
           // update name
           range: {
@@ -151,7 +166,16 @@ export async function editSpreadsheet(
         },
       },
     ];
-
+    await batchUpdate(spreadsheetId, access_token, requestsForUpdateSheetProperties);
+    await batchUpdate(spreadsheetId, access_token, requestsFormergeCells);
+    await batchUpdate(spreadsheetId, access_token, requestsForAddConditionalFormatRule);
+    await batchUpdate(spreadsheetId, access_token, requestsForUpdateCells);
+  } catch (error) {
+    console.error('Error updating sheet formatting:', error);
+  }
+}
+export const batchUpdate = async (spreadsheetId: string, access_token: string, requests: any) => {
+  try {
     const batchUpdateUrl = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}:batchUpdate`;
     const batchUpdateConfig = {
       method: 'post',
@@ -166,7 +190,6 @@ export async function editSpreadsheet(
     };
 
     const updateResponse = await axios(batchUpdateConfig);
-    console.log('updateResponse---------', updateResponse);
     if (updateResponse.status === 200) {
       console.log('Sheet formatting updated successfully!');
       return updateResponse;
@@ -176,7 +199,7 @@ export async function editSpreadsheet(
   } catch (error) {
     console.error('Error updating sheet formatting:', error);
   }
-}
+};
 // Function to read spreadsheet values from a sheet
 export async function readSheetValues(spreadsheetId: string, access_token: string, range: string) {
   try {
@@ -210,7 +233,7 @@ export const appendRow = async (req: any) => {
       values: string[];
     };
 
-    const appendUrl = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}?valueInputOption=USER_ENTERED`;
+    const appendUrl = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}:append?valueInputOption=USER_ENTERED`;
 
     const appendConfig = {
       method: 'post',
@@ -231,5 +254,39 @@ export const appendRow = async (req: any) => {
   } catch (err) {
     console.error('Error appending row to sheet:', err);
     throw err; // Rethrow the error to handle it outside of this function if needed
+  }
+};
+
+export const getAllSheetIds = async (spreadsheetId: string, accessToken: string) => {
+  try {
+    const sheetsInfoUrl = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}`;
+
+    const sheetsInfoConfig = {
+      method: 'get',
+      url: sheetsInfoUrl,
+      headers: {
+        Authorization: 'Bearer ' + accessToken,
+        Accept: 'application/json',
+      },
+    };
+
+    const response = await axios(sheetsInfoConfig);
+    const sheets = response.data.sheets;
+
+    const sheetIds: number[] = sheets.map((sheet: any) => sheet.properties.sheetId);
+
+    return sheetIds;
+  } catch (err) {
+    console.error('Error fetching sheet IDs:', err);
+    throw err;
+  }
+};
+export const getLatestSheetId = async (spreadsheetId: string, accessToken: string) => {
+  try {
+    const sheetIds = await getAllSheetIds(spreadsheetId, accessToken);
+    const latestSheetId = sheetIds[sheetIds.length - 1];
+    return latestSheetId;
+  } catch (err) {
+    console.error('Error fetching latest sheet IDs:', err);
   }
 };

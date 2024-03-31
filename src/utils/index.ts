@@ -37,3 +37,17 @@ export const TOdayDate = () => {
   // Print the formatted date
   return formattedDate;
 };
+
+export const valuesFromMessage = (messageObject: any) => {
+  try {
+    const messageText = messageObject.text || '';
+    const messages = messageText.substr(1).split(' ');
+    // messageObject.
+    // [[date, 'Groceries', '7000', 'online', 'Daily expenses']];
+    const date = TOdayDate();
+    messages[0] = date;
+    return messages;
+  } catch (err) {
+    console.log('err in values', err);
+  }
+};
