@@ -40,10 +40,20 @@ export const editSpreadsheetUingGoogleSdk = (req: any) => {
       {
         updateSheetProperties: {
           properties: {
-            sheetId: sheetId, // Assuming you are editing the first sheet, if not change the sheetId accordingly
-            gridProperties: { frozenRowCount: 2 },
+            sheetId: sheetId,
+            index: 1,
+            title: 'marge-table-1',
+            gridProperties: {
+              rowCount: 1000,
+              columnCount: 100,
+              frozenRowCount: 2,
+            },
+            tabColor: {
+              red: 1,
+              green: 1,
+            },
           },
-          fields: 'gridProperties.frozenRowCount',
+          fields: '*',
         },
       },
       // Merge the first 6 cells of the first row
@@ -98,10 +108,33 @@ export const editSpreadsheetUingGoogleSdk = (req: any) => {
       requestBody: { requests: requests },
     });
 
-    console.log('Sheet updated successfully:', (response as any)?.data);
+    console.log('Sheet updated successfully:', response);
     return (response as any)?.data;
   } catch (err) {
     console.error('Error editing sheet:', err);
     throw err;
+  }
+};
+
+export const rowEntry = async (req: any) => {
+  try {
+    const { accessTokn, spreadSheetId, range } = req as {
+      spreadSheetId: string;
+      accessTokn: any;
+      range: string;
+    };
+    const sheets = google.sheets({ version: 'v4', auth: accessTokn });
+    const response = await sheets.spreadsheets.values.append({
+      spreadsheetId: spreadSheetId,
+      range: range,
+      valueInputOption: 'USER_ENTERED',
+      requestBody: {
+        values: [['date', 'description', 'amount']],
+      },
+    });
+    console.log('row entry', response.data);
+    return response.data;
+  } catch (err) {
+    console.error('Error editing rowentry sheet:', err);
   }
 };

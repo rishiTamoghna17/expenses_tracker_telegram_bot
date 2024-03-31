@@ -1,9 +1,13 @@
 import { getAxiosInstance } from '../lib/axios';
 import { getGoogleAuth, getNewUrl } from '../lib/google_auth';
-import { checkAccessToken } from '../utils';
+import { TOdayDate, checkAccessToken } from '../utils';
 import { getRefreshTokenFromDb } from './dbHandler';
-import { createSpreadsheet, editSpreadsheet, readSheetValues } from './googleSheet';
-import { editSpreadsheetUingGoogleSdk, getFromSheetsUingGoogleSdk } from './googlesheet-sdk';
+import { appendRow, createSpreadsheet, editSpreadsheet, readSheetValues } from './googleSheet';
+import {
+  editSpreadsheetUingGoogleSdk,
+  getFromSheetsUingGoogleSdk,
+  rowEntry,
+} from './googlesheet-sdk';
 export const chat_id = '1149737484';
 export const sendMessage = async (messageObject: any, messageText: string) => {
   try {
@@ -54,7 +58,7 @@ export const handleMessage = async (messageObject: any) => {
           // const getSpreadsheet = await readSheetValues(spreadsheetId, accessTokenData, range);
           const getGoogleAuthData = getGoogleAuth(accessTokenData);
           const req = {
-            range: 'A2:B2',
+            range: 'March Expenses!A2:A',
             spreadsheetId: '15EU70BC_DuAa4V-GFQ5ni7ZiOf7bF6Ey0NP2aS1vRYM',
             auth: getGoogleAuthData,
           };
@@ -65,26 +69,57 @@ export const handleMessage = async (messageObject: any) => {
           console.log('getSpreadsheet---->>', getSpreadsheet, 'end-----------\\');
           return await sendMessage(messageObject, 'getSpreadsheet?.data?.spreadsheetUrl');
 
-        case 'test-1':
-        // const spreadSheetId = '1kAG7L2PwjpOv1qUptalc93QlXgrXIMtx-MCVP4CZ1eU';
+        // case 'test':
+        // const spreadSheetId = '1PrlC-OZfMdIeL_Czf7ScphddKM3Fs9Q8glZ634RgSsA';
         // const accessTokn = await checkAccessToken(messageObject);
-        // const test = await editSpreadsheet(spreadSheetId, accessTokn);
+        // const test = await editSpreadsheet(spreadSheetId, accessTokn,386568529);
         // console.log('test------------>', test?.data);
         // if (!test) {
         //   return sendMessage(messageObject, 'test not found');
         // }
         // return sendMessage(messageObject, test?.data?.spreadsheetId);
 
+        // case 'test-2':
+        //   const spreadSheetId = '1PrlC-OZfMdIeL_Czf7ScphddKM3Fs9Q8glZ634RgSsA';
+        //   const accessTokn = await checkAccessToken(messageObject);
+        //   const rex = { spreadSheetId: spreadSheetId, accessTokn: accessTokn, sheetId: 386568529 };
+        //   const test = await editSpreadsheetUingGoogleSdk(rex);
+        //   console.log('test------------>', test);
+        //   if (!test) {
+        //     return sendMessage(messageObject, 'test not found');
+        //   }
+        //   return sendMessage(messageObject, test?.data?.spreadsheetId);
+
+        // case 'test-3':
+        //   const spreadSheetId = '1PrlC-OZfMdIeL_Czf7ScphddKM3Fs9Q8glZ634RgSsA';
+        //   const accessTokn = await checkAccessToken(messageObject);
+        //   const rex = { spreadSheetId: spreadSheetId, accessTokn: accessTokn, range: "marge-table-1!A:B:C" };
+        //   const test = await rowEntry(rex);
+        //   console.log('test------------>', test);
+        //   if (!test) {
+        //     return sendMessage(messageObject, 'test not found');
+        //   }
+        //   return sendMessage(messageObject, "data updated successfully");
+
         case 'test':
-          const spreadSheetId = '1kAG7L2PwjpOv1qUptalc93QlXgrXIMtx-MCVP4CZ1eU';
+          const spreadSheetId = '1PrlC-OZfMdIeL_Czf7ScphddKM3Fs9Q8glZ634RgSsA';
           const accessTokn = await checkAccessToken(messageObject);
-          const rex = { spreadSheetId: spreadSheetId, accessTokn: accessTokn, sheetId: 1469645569 };
-          const test = await editSpreadsheetUingGoogleSdk(rex);
+          const date = TOdayDate();
+          const values = [[date, 'Groceries', '7000', 'online', 'Daily expenses']];
+          const range = 'marge-table-first!A:F:append';
+          const rex = {
+            spreadsheetId: spreadSheetId,
+            accessToken: accessTokn,
+            range: range,
+            values: values,
+          };
+          const test = await appendRow(rex);
           console.log('test------------>', test);
           if (!test) {
             return sendMessage(messageObject, 'test not found');
           }
-          return sendMessage(messageObject, test?.data?.spreadsheetId);
+          return sendMessage(messageObject, 'data updated successfully');
+
         default:
           return sendMessage(messageObject, "I don't understand you");
       }

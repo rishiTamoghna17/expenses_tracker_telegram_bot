@@ -44,78 +44,82 @@ export async function createSpreadsheet(req: any) {
     //   throw error; // Re-throw for handling in your application
   }
 }
-export async function editSpreadsheet(spreadsheetId: string, access_token: string) {
+export async function editSpreadsheet(
+  spreadsheetId: string,
+  access_token: string,
+  sheetId: number,
+) {
   try {
     const requests = [
       // Request to set header row text, freeze the first row, and format background color
       {
-        updateSheetProperties: {
-          // create new colorful sheet name with 1000 rows and fix 1st row
-          properties: {
-            sheetId: 237728141,
-            index: 1,
-            title: 'marge-table-1',
-            gridProperties: {
-              rowCount: 1000,
-              columnCount: 100,
-              frozenRowCount: 2,
-            },
-            tabColor: {
-              red: 1,
-              green: 1,
-            },
-          },
-          fields: '*',
-        },
+        // updateSheetProperties: {
+        //   // create new colorful sheet name with 1000 rows and fix 1st row
+        //   properties: {
+        //     sheetId: sheetId,
+        //     index: 1,
+        //     title: 'marge-table-first',
+        //     gridProperties: {
+        //       rowCount: 1000,
+        //       columnCount: 100,
+        //       frozenRowCount: 2,
+        //     },
+        //     tabColor: {
+        //       red: 1,
+        //       green: 1,
+        //     },
+        //   },
+        //   fields: '*',
+        // },
 
-        mergeCells: {
-          //MARGE CELLS
-          range: {
-            sheetId: 237728141,
-            startRowIndex: 0,
-            endRowIndex: 1,
-            startColumnIndex: 0,
-            endColumnIndex: 5,
-          },
-          mergeType: 'MERGE_ALL',
-        },
+        // mergeCells: {
+        //   //MARGE CELLS
+        //   range: {
+        //     sheetId: sheetId,
+        //     startRowIndex: 0,
+        //     endRowIndex: 1,
+        //     startColumnIndex: 0,
+        //     endColumnIndex: 5,
+        //   },
+        //   mergeType: 'MERGE_ALL',
+        // },
 
-        addConditionalFormatRule: {
-          // contidion sheet to coloring background
-          rule: {
-            ranges: [
-              {
-                sheetId: 237728141,
-                startRowIndex: 0,
-                endRowIndex: 1,
-                startColumnIndex: 0,
-                endColumnIndex: 5,
-              },
-            ],
-            booleanRule: {
-              condition: {
-                type: 'CUSTOM_FORMULA',
-                values: [
-                  {
-                    userEnteredValue: '=A1>5',
-                  },
-                ],
-              },
-              format: {
-                backgroundColor: {
-                  red: 1,
-                  green: 0.5,
-                  blue: 0,
-                },
-              },
-            },
-          },
-        },
+        // addConditionalFormatRule: {
+        //   // contidion sheet to coloring background
+        //   rule: {
+        //     ranges: [
+        //       {
+        //         sheetId: sheetId,
+        //         startRowIndex: 0,
+        //         endRowIndex: 1,
+        //         startColumnIndex: 0,
+        //         endColumnIndex: 5,
+        //       },
+        //     ],
+        //     booleanRule: {
+        //       condition: {
+        //         type: 'CUSTOM_FORMULA',
+        //         values: [
+        //           {
+        //             userEnteredValue: '=A1>5',
+        //           },
+        //         ],
+        //       },
+        //       format: {
+        //         backgroundColor: {
+        //           red: 1,
+        //           green: 0.5,
+        //           blue: 0,
+        //         },
+        //       },
+        //     },
+        //   },
+        // },
 
         updateCells: {
           // update name
           range: {
-            sheetId: 237728141,
+            sheetId: sheetId,
             startRowIndex: 0,
             // endRowIndex: ,
             startColumnIndex: 0,
@@ -174,12 +178,7 @@ export async function editSpreadsheet(spreadsheetId: string, access_token: strin
   }
 }
 // Function to read spreadsheet values from a sheet
-export async function readSheetValues(
-  spreadsheetId: string,
-  access_token: string,
-  range: string,
-  sheetName?: string,
-) {
+export async function readSheetValues(spreadsheetId: string, access_token: string, range: string) {
   try {
     const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}`;
     const axiosCOnfig = {
@@ -201,25 +200,36 @@ export async function readSheetValues(
   }
 }
 
-// Function to update spreadsheet values (replace existing values)
-// export async function updateSheetValues(spreadsheetId:string, sheetName:"", values:any,access_token:string) {
-//     const sheets = google.sheets({ version: "v4", auth: access_token });
+export const appendRow = async (req: any) => {
+  try {
+    const { accessToken, spreadsheetId, range, values } = req as {
+      spreadsheetId: string;
+      accessToken: string;
+      sheetId: number;
+      range: string;
+      values: string[];
+    };
 
-//     const body = {
-//       values,
-//     };
+    const appendUrl = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}?valueInputOption=USER_ENTERED`;
 
-//     try {
-//       const response = await sheets.spreadsheets.values.update({
-//         spreadsheetId,
-//         valueInputOption: "USER_ENTERED", // Adjust as needed
-//         range: `${sheetName}!A1:B2`, // Adjust range for your data
-//         resource: body,
-//       });
+    const appendConfig = {
+      method: 'post',
+      url: appendUrl,
+      headers: {
+        Authorization: 'Bearer ' + accessToken,
+        Accept: 'application/json',
+      },
+      data: {
+        values: values,
+      },
+    };
 
-//       console.log("Sheet values updated:", response.data.updatedCells);
-//     } catch (error) {
-//       console.error("Error updating sheet values:", error);
-//     //   throw error; // Re-throw for handling in your application
-//     }
-//   }
+    const response = await axios(appendConfig);
+    console.log('Row appended successfully:', response.data);
+
+    return response.data;
+  } catch (err) {
+    console.error('Error appending row to sheet:', err);
+    throw err; // Rethrow the error to handle it outside of this function if needed
+  }
+};

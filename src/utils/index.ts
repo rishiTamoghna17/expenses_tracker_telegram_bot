@@ -18,3 +18,22 @@ export const checkAccessToken = async (messageObject: any) => {
     console.error('Error from checkAccessToken:', error);
   }
 };
+
+export const TOdayDate = () => {
+  var today = new Date();
+
+  // Extract day, month, and year
+  const day = today.getDate();
+  const month = today.getMonth() + 1; // Adding 1 because January is 0-indexed
+  const year = today.getFullYear();
+
+  // Format day and month to have leading zeros if necessary
+  const formattedDay: string = day < 10 ? '0' + day : day.toString();
+  const formattedMonth: string = month < 10 ? '0' + month : month.toString();
+
+  // Concatenate components in desired format
+  var formattedDate = formattedDay + '/' + formattedMonth + '/' + year;
+
+  // Print the formatted date
+  return formattedDate;
+};

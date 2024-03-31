@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabaseClient';
 export const updateRefreshTokenInDB = async (token: string) => {
   try {
     const { data, error } = await supabase
-      .from('users')
+      .from('User')
       .insert([
         {
           key: 'tele_bot_google_refresh_token',
@@ -22,7 +22,7 @@ export const updateRefreshTokenInDB = async (token: string) => {
 export const getRefreshTokenFromDb = async () => {
   try {
     const { data, error } = await supabase
-      .from('users')
+      .from('User')
       .select('value') // Only select the 'value' column
       .eq('key', 'tele_bot_google_refresh_token')
       .order('id', { ascending: false }) // Order by id descending
