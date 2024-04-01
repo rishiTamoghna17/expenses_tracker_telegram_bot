@@ -290,3 +290,30 @@ export const getLatestSheetId = async (spreadsheetId: string, accessToken: strin
     console.error('Error fetching latest sheet IDs:', err);
   }
 };
+
+export const getSheetName = async (spreadsheetId: string, accessToken: string, sheetId: number) => {
+  try {
+    const sheetInfoUrl = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}?fields=sheets.properties&ranges=sheet${sheetId}`;
+
+    const sheetInfoConfig = {
+      method: 'get',
+      url: sheetInfoUrl,
+      headers: {
+        Authorization: 'Bearer ' + accessToken,
+        Accept: 'application/json',
+      },
+    };
+
+    const response = await axios(sheetInfoConfig);
+    console.log('response---->>', response);
+    const sheetProperties = response.data.sheets[0].properties;
+    const sheetName = sheetProperties.title;
+
+    console.log('Sheet Name:', sheetName);
+
+    return sheetName;
+  } catch (err) {
+    console.error('Error fetching sheet name:', err);
+    throw err;
+  }
+};

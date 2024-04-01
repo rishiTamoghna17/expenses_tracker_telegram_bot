@@ -8,6 +8,7 @@ import {
   editSpreadsheet,
   getAllSheetIds,
   getLatestSheetId,
+  getSheetName,
   readSheetValues,
 } from './googleSheet';
 import {
@@ -91,35 +92,36 @@ export const handleMessage = async (messageObject: any) => {
           console.log('getSpreadsheet---->>', getSpreadsheet, 'end-----------\\');
           return await sendMessage(messageObject, 'getSpreadsheet?.data?.spreadsheetUrl');
 
-        case 'new':
-          const spreadSheetId = '1PrlC-OZfMdIeL_Czf7ScphddKM3Fs9Q8glZ634RgSsA';
-          const accessTokn = await checkAccessToken(messageObject);
-          const value = valuesFromMessage(messageObject);
+        // case 'new':
+        //   const spreadSheetId = '1PrlC-OZfMdIeL_Czf7ScphddKM3Fs9Q8glZ634RgSsA';
+        //   const accessTokn = await checkAccessToken(messageObject);
+        //   const value = valuesFromMessage(messageObject);
 
-          console.log('value---------->', value);
-          const range = 'marge-table-first!A:F';
-          const rex = {
-            spreadsheetId: spreadSheetId,
-            accessToken: accessTokn,
-            range: range,
-            values: [value],
-          };
-          const test = await appendRow(rex);
+        //   console.log('value---------->', value);
+        //   const range = 'marge-table-first!A:F';
+        //   const rex = {
+        //     spreadsheetId: spreadSheetId,
+        //     accessToken: accessTokn,
+        //     range: range,
+        //     values: [value],
+        //   };
+        //   const test = await appendRow(rex);
+        //   console.log('test------------>', test);
+        //   if (!test) {
+        //     return sendMessage(messageObject, 'test not found');
+        //   }
+        //   return sendMessage(messageObject, 'data updated successfully');
+
+        case 'test':
+          const spreadSheetId = '19EKwLduOTWv_qnHIwNb22OdW1s3lfKkrrj3t8RD8OO4';
+          const accessTokn = await checkAccessToken(messageObject);
+          const sheetId = await getLatestSheetId(spreadSheetId, accessTokn);
+          const test = sheetId && (await getSheetName(spreadSheetId, accessTokn, sheetId));
           console.log('test------------>', test);
           if (!test) {
             return sendMessage(messageObject, 'test not found');
           }
-          return sendMessage(messageObject, 'data updated successfully');
-
-        // case 'test':
-        // const spreadSheetId = '1PrlC-OZfMdIeL_Czf7ScphddKM3Fs9Q8glZ634RgSsA';
-        // const accessTokn = await checkAccessToken(messageObject);
-        // const test = await getLatestSheetId(spreadSheetId, accessTokn);
-        // console.log('test------------>', test);
-        // if (!test) {
-        //   return sendMessage(messageObject, 'test not found');
-        // }
-        // return sendMessage(messageObject, "test run successfully");
+          return sendMessage(messageObject, 'test run successfully');
 
         // case 'test-2':
         //   const spreadSheetId = '1PrlC-OZfMdIeL_Czf7ScphddKM3Fs9Q8glZ634RgSsA';
