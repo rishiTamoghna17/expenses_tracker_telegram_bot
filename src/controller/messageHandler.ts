@@ -1,3 +1,4 @@
+import { getGoogleAuth } from '../lib/google_auth';
 import {
   TOdayDate,
   checkAccessToken,
@@ -15,6 +16,7 @@ import {
   createSpreadsheet,
   createSheet,
 } from './googleSheet';
+import { getFromSheetsUingGoogleSdk } from './googlesheet-sdk';
 
 export const createSpreadSheetProcess = async (req: any) => {
   try {
@@ -23,15 +25,6 @@ export const createSpreadSheetProcess = async (req: any) => {
     const spreadsheetId = newSpreadsheet.spreadsheetId;
     await updatespreadsheetIdInDB(spreadsheetId, userName(messageObject));
     const latestSheet = await getLatestSheetId(spreadsheetId, access_token);
-    // latestSheet && (await editSpreadsheet(spreadsheetId1, access_token, latestSheet, sheetTitle));
-    // const parameter = {
-    //   spreadsheetId: spreadsheetId1,
-    //   accessToken: access_token,
-    //   range: `${sheetTitle}!A:E`,
-    //   values: [['Data', 'Category', 'Amount', 'Payment Method', 'Daily expenses']],
-    //   backgroundColor: true,
-    //   sheetId: latestSheet,
-    // };
     const parameter = {
       access_token: access_token,
       sheetTitle: sheetTitle,
@@ -71,10 +64,27 @@ export const addExpenses = async (messageObject: any) => {
   try {
     const spreadSheetId = await getSpreadSheetFromDb(userName(messageObject));
     const accessTokn = await checkAccessToken(messageObject);
-    const expenseData = valuesFromMessage(messageObject);
-    const sheetId = spreadSheetId && (await getLatestSheetId(spreadSheetId, accessTokn));
     const date = new Date();
     const sheetTitle = `${getCurrentMonth(date)}-expense`;
+
+    console.log('to date---------: ', TOdayDate(date));
+    const todayString = TOdayDate(date);
+    const sheetrange = `${sheetTitle}!A3:A`;
+    const req = { messageObject: messageObject, range: sheetrange };
+    const dateArr = await getDataFromSpecificSheet(req);
+    // console.log('dateArr---------: ' , dateArr);
+    if (dateArr.includes(todayString)) {
+      console.log('Date present');
+    } else {
+      console.log('Date npt present present');
+    }
+
+    const expenseData = valuesFromMessage(messageObject);
+    console.log(' expenseData---------: ', expenseData);
+    const totalDailyExpenseValue = dailyExpenseValues({ value: expenseData, date: date });
+    console.log(' totalDailyExpenseValue---------: ', totalDailyExpenseValue);
+
+    const sheetId = spreadSheetId && (await getLatestSheetId(spreadSheetId, accessTokn));
     const rex = {
       spreadsheetId: spreadSheetId,
       accessToken: accessTokn,
@@ -85,7 +95,7 @@ export const addExpenses = async (messageObject: any) => {
 
     const testdate = new Date(2024, 8, 1);
     const formattedDate = TOdayDate(testdate);
-    if (isFirstDateOfMonth(testdate)) {
+    if (isFirstDateOfMonth(date)) {
       const sheetParams = {
         spreadsheetId: spreadSheetId,
         access_token: accessTokn,
@@ -106,7 +116,7 @@ export const addExpenses = async (messageObject: any) => {
         spreadsheetId: spreadSheetId,
         accessToken: accessTokn,
         range: `${sheetTitle}!A:E`,
-        values: [expenseData],
+        values: [totalDailyExpenseValue],
         sheetId: sheetId,
       };
 
@@ -132,5 +142,46 @@ export const addExpenses = async (messageObject: any) => {
     return expenseAdded;
   } catch (err) {
     console.log({ message: 'err in addExpenses', err: err });
+  }
+};
+
+export const dailyExpenseValues = (req: any) => {
+  try {
+    const { value, date } = req;
+    const calculateDate = dateForCalculation(date);
+    const dailyExpense = `=SUMIFS(C3:C, A3:A, ${calculateDate})`;
+    value.push(dailyExpense);
+    return value;
+  } catch (err) {
+    console.log({ message: 'err in dailyExpenseValues', err: err });
+  }
+};
+
+export const dateForCalculation = (date: Date) => {
+  const year = date.getFullYear();
+  const month = date.getMonth() + 1; // January is 0
+  const day = date.getDate();
+  return `DATE(${year},${month},${day})`;
+};
+
+export const getDataFromSpecificSheet = async (req: any) => {
+  try {
+    const { messageObject, range } = req;
+    const accessTokenData = await checkAccessToken(messageObject);
+    const getGoogleAuthData = getGoogleAuth(accessTokenData);
+    const spreadSheetId = await getSpreadSheetFromDb(userName(messageObject));
+    const params = {
+      range: range,
+      spreadsheetId: spreadSheetId,
+      auth: getGoogleAuthData,
+    };
+    const getSpreadsheet = await getFromSheetsUingGoogleSdk(params);
+    if (!getSpreadsheet) {
+      return sendMessage(messageObject, 'you are not othorized to do that!!!!');
+    }
+    const extractDates = (getSpreadsheet as any)?.map((entry: any[]) => entry[0]);
+    return extractDates;
+  } catch (err) {
+    console.log({ message: 'err in getDataFromSpecificSheet', err: err });
   }
 };

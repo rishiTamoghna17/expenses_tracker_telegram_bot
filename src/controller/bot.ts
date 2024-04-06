@@ -6,7 +6,6 @@ import {
   getCurrentMonth,
   isFirstDateOfMonth,
   userName,
-  valuesFromMessage,
 } from '../utils';
 import { getRefreshTokenFromDb, getSpreadSheetFromDb, updatespreadsheetIdInDB } from './dbHandler';
 import {
@@ -24,7 +23,7 @@ import {
   getFromSheetsUingGoogleSdk,
   rowEntry,
 } from './googlesheet-sdk';
-import { addExpenses, createSpreadSheetProcess } from './messageHandler';
+import { addExpenses, createSpreadSheetProcess, getDataFromSpecificSheet } from './messageHandler';
 export const chat_id = '1149737484';
 export const sendMessage = async (messageObject: any, messageText: string) => {
   try {
@@ -84,26 +83,29 @@ export const handleMessage = async (messageObject: any) => {
           );
 
         case 'get_spread_sheet':
-        // const accessTokenData = await checkAccessToken(messageObject);
+          const accessTokenData = await checkAccessToken(messageObject);
 
-        // // const spreadsheetId = '1kAG7L2PwjpOv1qUptalc93QlXgrXIMtx-MCVP4CZ1eU';
-        // // const range = 'A2:B2';
-        // // const getSpreadsheet = await readSheetValues(spreadsheetId, accessTokenData, range);
-        // const getGoogleAuthData = getGoogleAuth(accessTokenData);
-        // const req = {
-        //   range: 'March Expenses!A2:A',
-        //   spreadsheetId: '15EU70BC_DuAa4V-GFQ5ni7ZiOf7bF6Ey0NP2aS1vRYM',
-        //   auth: getGoogleAuthData,
-        // };
-        // const getSpreadsheet = await getFromSheetsUingGoogleSdk(req);
-        // if (!getSpreadsheet) {
-        //   return sendMessage(messageObject, 'you are not othorized to do that!!!!');
-        // }
-        // console.log('getSpreadsheet---->>', getSpreadsheet, 'end-----------\\');
-        // return await sendMessage(messageObject, 'getSpreadsheet?.data?.spreadsheetUrl');
+          // const spreadsheetId = '1kAG7L2PwjpOv1qUptalc93QlXgrXIMtx-MCVP4CZ1eU';
+          // const range = 'A2:B2';
+          // const getSpreadsheet = await readSheetValues(spreadsheetId, accessTokenData, range);
+          const getGoogleAuthData = getGoogleAuth(accessTokenData);
+          const spreadSheetId = await getSpreadSheetFromDb(userName(messageObject));
+          const req = {
+            range: 'April-expense!A3:A',
+            spreadsheetId: spreadSheetId,
+            auth: getGoogleAuthData,
+          };
+          const getSpreadsheet = await getFromSheetsUingGoogleSdk(req);
+          if (!getSpreadsheet) {
+            return sendMessage(messageObject, 'you are not othorized to do that!!!!');
+          }
+          console.log('getSpreadsheet---->>', getSpreadsheet, 'end-----------\\');
+          return await sendMessage(messageObject, 'getSpreadsheet?.data?.spreadsheetUrl');
 
         case 'test':
           console.log('user name-------->>', userName(messageObject));
+          const test = await getDataFromSpecificSheet({ messageObject: messageObject });
+          console.log('test===========>>', test);
           // createSheet()
           // const spreadSheetId = '1LlJmduV-w0dUIONdEzV3J6eecW94V-e3pDrUtwtXZa0';
           // const accessTokn = await checkAccessToken(messageObject);
