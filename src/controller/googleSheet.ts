@@ -11,8 +11,6 @@ export async function createSpreadsheet(req: any) {
   // const dataSet = [
   //   ['2024-03-18', 'Lunch', 'Food', '10.00', 'Cash'],
   //   ['2024-03-18', 'Coffee', 'Beverage', '5.00', 'Card'],
-  // ];
-  // console.log('access_token--------->', access_token);
   try {
     const url = 'https://sheets.googleapis.com/v4/spreadsheets';
     const asiosData = {
@@ -144,7 +142,7 @@ export async function editSpreadsheet(
             {
               values: [
                 {
-                  userEnteredValue: { stringValue: 'expoenses claculator jbalal' },
+                  userEnteredValue: { stringValue: 'Monthly expense report card' },
                   textFormatRuns: {
                     startIndex: 0,
                     format: {
@@ -225,13 +223,54 @@ export async function readSheetValues(spreadsheetId: string, access_token: strin
 
 export const appendRow = async (req: any) => {
   try {
-    const { accessToken, spreadsheetId, range, values } = req as {
+    const { accessToken, spreadsheetId, range, values, backgroundColor, sheetId } = req as {
       spreadsheetId: string;
       accessToken: string;
       sheetId: number;
       range: string;
       values: string[];
+      backgroundColor?: boolean;
     };
+    // if (backgroundColor) {
+    //   const requests= [
+    //     // Request to set header row text, freeze the first row, and format background color
+    //     {
+    //       addConditionalFormatRule: {
+    //         // contidion sheet to coloring background
+    //         rule: {
+    //           ranges: [
+    //             {
+    //               sheetId: sheetId,
+    //               startRowIndex: 0,
+    //               endRowIndex: 1,
+    //               startColumnIndex: 0,
+    //               endColumnIndex: 5,
+    //             },
+    //           ],
+    //           booleanRule: {
+    //             condition: {
+    //               type: 'CUSTOM_FORMULA',
+    //               values: [
+    //                 {
+    //                   userEnteredValue: '=A1>5',
+    //                 },
+    //               ],
+    //             },
+    //             format: {
+    //               backgroundColor: {
+    //                 red: 1,
+    //                 green: 0.5,
+    //                 blue: 0,
+    //               },
+    //             },
+    //           },
+    //         },
+    //       },
+    //     },
+    //   ];
+
+    //   await batchUpdate(spreadsheetId, accessToken, requests);
+    // }
 
     const appendUrl = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}:append?valueInputOption=USER_ENTERED`;
 
@@ -248,6 +287,8 @@ export const appendRow = async (req: any) => {
     };
 
     const response = await axios(appendConfig);
+    // If background color is specified, set it for the appended row
+
     console.log('Row appended successfully:', response.data);
 
     return response.data;
@@ -291,9 +332,10 @@ export const getLatestSheetId = async (spreadsheetId: string, accessToken: strin
   }
 };
 
-export const getSheetName = async (spreadsheetId: string, accessToken: string, sheetId: number) => {
+//this function returns properties of the sheet
+export const getSheetName = async (spreadsheetId: string, accessToken: string) => {
   try {
-    const sheetInfoUrl = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}?fields=sheets.properties&ranges=sheet${sheetId}`;
+    const sheetInfoUrl = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}?fields=sheets(properties(title,sheetId))`;
 
     const sheetInfoConfig = {
       method: 'get',
@@ -305,15 +347,14 @@ export const getSheetName = async (spreadsheetId: string, accessToken: string, s
     };
 
     const response = await axios(sheetInfoConfig);
-    console.log('response---->>', response);
-    const sheetProperties = response.data.sheets[0].properties;
-    const sheetName = sheetProperties.title;
-
-    console.log('Sheet Name:', sheetName);
-
-    return sheetName;
+    const sheets = response.data.sheets;
+    console.log(sheets);
+    return sheets; // returns [
+    //   { properties: { sheetId: 0, title: 'Sheet1' } },
+    //   { properties: { sheetId: 1090302361, title: 'Sheet2' } },
+    //   { properties: { sheetId: 1852600385, title: 'Sheet3' } }
+    // ]
   } catch (err) {
     console.error('Error fetching sheet name:', err);
-    throw err;
   }
 };

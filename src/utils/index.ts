@@ -19,13 +19,11 @@ export const checkAccessToken = async (messageObject: any) => {
   }
 };
 
-export const TOdayDate = () => {
-  var today = new Date();
-
+export const TOdayDate = (date: Date) => {
   // Extract day, month, and year
-  const day = today.getDate();
-  const month = today.getMonth() + 1; // Adding 1 because January is 0-indexed
-  const year = today.getFullYear();
+  const day = date.getDate();
+  const month = date.getMonth() + 1; // Adding 1 because January is 0-indexed
+  const year = date.getFullYear();
 
   // Format day and month to have leading zeros if necessary
   const formattedDay: string = day < 10 ? '0' + day : day.toString();
@@ -38,16 +36,62 @@ export const TOdayDate = () => {
   return formattedDate;
 };
 
+export const isFirstDateOfMonth = (date: Date): boolean => {
+  // Extract the day component of the date
+  const day = date.getDate();
+
+  // Check if the day is equal to 1
+  return day === 1;
+};
+
 export const valuesFromMessage = (messageObject: any) => {
   try {
-    const messageText = messageObject.text || '';
+    const messageText = (messageObject as { text: string }).text || '';
     const messages = messageText.substr(1).split(' ');
     // messageObject.
     // [[date, 'Groceries', '7000', 'online', 'Daily expenses']];
-    const date = TOdayDate();
+    console.log('messages---------->', messages);
+    if (messages.length < 4) {
+      return sendMessage(
+        messageObject,
+        `Sorry, your command looks like this : ${messageObject.text} \n your command must look like \n this: /new catagory amount paymentMethod \n example: /new groceries 7000 online ;  \n another example: /new food 500 cash`,
+      );
+    }
+    const date = TOdayDate(new Date());
     messages[0] = date;
-    return messages;
+    const messageArray = messages.map((message) => {
+      return message.trim().toLowerCase();
+    });
+    return messageArray;
   } catch (err) {
     console.log('err in values', err);
   }
+};
+
+export const getCurrentMonth = (date: Date) => {
+  const months = [
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
+  ];
+  const now = date;
+  return months[now.getMonth()];
+};
+
+export const userName = (messageObject: any) => {
+  const {
+    chat: { first_name, last_name },
+  } = messageObject;
+
+  const fullName = `${first_name} ${last_name}`;
+  return fullName;
 };

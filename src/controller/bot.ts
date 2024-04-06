@@ -1,7 +1,14 @@
 import { getAxiosInstance } from '../lib/axios';
 import { getGoogleAuth, getNewUrl } from '../lib/google_auth';
-import { TOdayDate, checkAccessToken, valuesFromMessage } from '../utils';
-import { getRefreshTokenFromDb } from './dbHandler';
+import {
+  TOdayDate,
+  checkAccessToken,
+  getCurrentMonth,
+  isFirstDateOfMonth,
+  userName,
+  valuesFromMessage,
+} from '../utils';
+import { getRefreshTokenFromDb, getSpreadSheetFromDb, updatespreadsheetIdInDB } from './dbHandler';
 import {
   appendRow,
   createSpreadsheet,
@@ -16,6 +23,7 @@ import {
   getFromSheetsUingGoogleSdk,
   rowEntry,
 } from './googlesheet-sdk';
+import { addExpenses, createSpreadSheetProcess } from './messageHandler';
 export const chat_id = '1149737484';
 export const sendMessage = async (messageObject: any, messageText: string) => {
   try {
@@ -51,76 +59,64 @@ export const handleMessage = async (messageObject: any) => {
         case 'creat_spread_sheet':
           sendMessage(messageObject, 'creating Spreadsheet..... just wait a second.........');
           const accessToken = await checkAccessToken(messageObject);
-          const reqe = {
-            title: 'new_TEST_sheet',
+
+          const createSpreadParams = {
             access_token: accessToken,
-            sheetTitle: 'test_spread_sheet',
+            sheetTitle: `${getCurrentMonth(new Date())}-expense`,
+            messageObject: messageObject,
+            title: 'Monthly expense report',
           };
-          const newSpreadsheet = await createSpreadsheet(reqe);
-          const spreadsheetId1 = newSpreadsheet.spreadsheetId;
-          const latestSheet = await getLatestSheetId(spreadsheetId1, accessToken);
-          const sheetTitle = 'test_spread_sheet';
-          latestSheet &&
-            (await editSpreadsheet(spreadsheetId1, accessToken, latestSheet, sheetTitle));
-          const parameter = {
-            spreadsheetId: spreadsheetId1,
-            accessToken: accessToken,
-            range: `${sheetTitle}!A:F`,
-            values: [['Data', 'Category', 'Amount', 'Payment Method', 'Daily expenses']],
-          };
-          const secondRow = await appendRow(parameter);
-          console.log('secondRow---->>', secondRow);
-          sendMessage(messageObject, 'Spreadsheet created successfully!!!!');
-          return sendMessage(messageObject, newSpreadsheet.spreadsheetUrl);
+          const newSpreadsheet = await createSpreadSheetProcess(createSpreadParams);
+          const newSpreadsheetUrl = newSpreadsheet && newSpreadsheet.data;
+          console.log('newSpreadsheet---->>', newSpreadsheet);
+          return sendMessage(
+            messageObject,
+            `Your first Spreadsheet created successfully!!!! \n The spreadsheet name is: MOnthly expense report \n The spreadsheet url is: ${newSpreadsheetUrl}`,
+          );
+
+        case 'new':
+          // const date = new Date()
+          const testdate = new Date(2024, 2, 1);
+          const formattedDate = TOdayDate(testdate);
+          if (isFirstDateOfMonth(testdate)) {
+            sendMessage(messageObject, 'new month');
+          }
+          console.log('testdate->', testdate, 'formattedDate->', formattedDate);
+          const addExpense = await addExpenses(messageObject);
+          return (
+            addExpense.tableRange && sendMessage(messageObject, 'Expenses are added successfully')
+          );
 
         case 'get_spread_sheet':
-          const accessTokenData = await checkAccessToken(messageObject);
+        // const accessTokenData = await checkAccessToken(messageObject);
 
-          // const spreadsheetId = '1kAG7L2PwjpOv1qUptalc93QlXgrXIMtx-MCVP4CZ1eU';
-          // const range = 'A2:B2';
-          // const getSpreadsheet = await readSheetValues(spreadsheetId, accessTokenData, range);
-          const getGoogleAuthData = getGoogleAuth(accessTokenData);
-          const req = {
-            range: 'March Expenses!A2:A',
-            spreadsheetId: '15EU70BC_DuAa4V-GFQ5ni7ZiOf7bF6Ey0NP2aS1vRYM',
-            auth: getGoogleAuthData,
-          };
-          const getSpreadsheet = await getFromSheetsUingGoogleSdk(req);
-          if (!getSpreadsheet) {
-            return sendMessage(messageObject, 'you are not othorized to do that!!!!');
-          }
-          console.log('getSpreadsheet---->>', getSpreadsheet, 'end-----------\\');
-          return await sendMessage(messageObject, 'getSpreadsheet?.data?.spreadsheetUrl');
-
-        // case 'new':
-        //   const spreadSheetId = '1PrlC-OZfMdIeL_Czf7ScphddKM3Fs9Q8glZ634RgSsA';
-        //   const accessTokn = await checkAccessToken(messageObject);
-        //   const value = valuesFromMessage(messageObject);
-
-        //   console.log('value---------->', value);
-        //   const range = 'marge-table-first!A:F';
-        //   const rex = {
-        //     spreadsheetId: spreadSheetId,
-        //     accessToken: accessTokn,
-        //     range: range,
-        //     values: [value],
-        //   };
-        //   const test = await appendRow(rex);
-        //   console.log('test------------>', test);
-        //   if (!test) {
-        //     return sendMessage(messageObject, 'test not found');
-        //   }
-        //   return sendMessage(messageObject, 'data updated successfully');
+        // // const spreadsheetId = '1kAG7L2PwjpOv1qUptalc93QlXgrXIMtx-MCVP4CZ1eU';
+        // // const range = 'A2:B2';
+        // // const getSpreadsheet = await readSheetValues(spreadsheetId, accessTokenData, range);
+        // const getGoogleAuthData = getGoogleAuth(accessTokenData);
+        // const req = {
+        //   range: 'March Expenses!A2:A',
+        //   spreadsheetId: '15EU70BC_DuAa4V-GFQ5ni7ZiOf7bF6Ey0NP2aS1vRYM',
+        //   auth: getGoogleAuthData,
+        // };
+        // const getSpreadsheet = await getFromSheetsUingGoogleSdk(req);
+        // if (!getSpreadsheet) {
+        //   return sendMessage(messageObject, 'you are not othorized to do that!!!!');
+        // }
+        // console.log('getSpreadsheet---->>', getSpreadsheet, 'end-----------\\');
+        // return await sendMessage(messageObject, 'getSpreadsheet?.data?.spreadsheetUrl');
 
         case 'test':
-          const spreadSheetId = '19EKwLduOTWv_qnHIwNb22OdW1s3lfKkrrj3t8RD8OO4';
-          const accessTokn = await checkAccessToken(messageObject);
-          const sheetId = await getLatestSheetId(spreadSheetId, accessTokn);
-          const test = sheetId && (await getSheetName(spreadSheetId, accessTokn, sheetId));
-          console.log('test------------>', test);
-          if (!test) {
-            return sendMessage(messageObject, 'test not found');
-          }
+          console.log('user name-------->>', userName(messageObject));
+
+          // const spreadSheetId = '1LlJmduV-w0dUIONdEzV3J6eecW94V-e3pDrUtwtXZa0';
+          // const accessTokn = await checkAccessToken(messageObject);
+          // // const sheetId = await getLatestSheetId(spreadSheetId, accessTokn);
+          // const test = await getSheetName(spreadSheetId, accessTokn);
+          // console.log('test------------>', test);
+          // if (!test) {
+          //   return sendMessage(messageObject, 'test not found');
+          // }
           return sendMessage(messageObject, 'test run successfully');
 
         // case 'test-2':

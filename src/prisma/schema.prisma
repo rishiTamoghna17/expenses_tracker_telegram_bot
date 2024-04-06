@@ -13,9 +13,16 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User { // Use PascalCase for model names
+model User {
   id        Int      @id @default(autoincrement())
-  key       String 
+  key       String
   value     String
   createdAt DateTime @default(now()) // Use `now()` for automatic timestamp
+}
+
+model SpreadSheet {
+  id            Int      @id @default(autoincrement())
+  user     String
+  spreadsheetId String
+  createdAt     DateTime @default(now()) // Use `now()` for automatic timestamp
 }
