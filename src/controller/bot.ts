@@ -11,6 +11,7 @@ import {
 import { getRefreshTokenFromDb, getSpreadSheetFromDb, updatespreadsheetIdInDB } from './dbHandler';
 import {
   appendRow,
+  createSheet,
   createSpreadsheet,
   editSpreadsheet,
   getAllSheetIds,
@@ -76,12 +77,7 @@ export const handleMessage = async (messageObject: any) => {
 
         case 'new':
           // const date = new Date()
-          const testdate = new Date(2024, 2, 1);
-          const formattedDate = TOdayDate(testdate);
-          if (isFirstDateOfMonth(testdate)) {
-            sendMessage(messageObject, 'new month');
-          }
-          console.log('testdate->', testdate, 'formattedDate->', formattedDate);
+
           const addExpense = await addExpenses(messageObject);
           return (
             addExpense.tableRange && sendMessage(messageObject, 'Expenses are added successfully')
@@ -108,7 +104,7 @@ export const handleMessage = async (messageObject: any) => {
 
         case 'test':
           console.log('user name-------->>', userName(messageObject));
-
+          // createSheet()
           // const spreadSheetId = '1LlJmduV-w0dUIONdEzV3J6eecW94V-e3pDrUtwtXZa0';
           // const accessTokn = await checkAccessToken(messageObject);
           // // const sheetId = await getLatestSheetId(spreadSheetId, accessTokn);

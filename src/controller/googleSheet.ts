@@ -6,11 +6,6 @@ export async function createSpreadsheet(req: any) {
     access_token: string;
     sheetTitle: string;
   };
-  // const sheets = google.sheets({ version: 'v4', auth: access_token });
-  // const rowHeaders = ['Date', 'Description', 'Category', 'Amount', 'Payment Method'];
-  // const dataSet = [
-  //   ['2024-03-18', 'Lunch', 'Food', '10.00', 'Cash'],
-  //   ['2024-03-18', 'Coffee', 'Beverage', '5.00', 'Card'],
   try {
     const url = 'https://sheets.googleapis.com/v4/spreadsheets';
     const asiosData = {
@@ -42,6 +37,34 @@ export async function createSpreadsheet(req: any) {
     //   throw error; // Re-throw for handling in your application
   }
 }
+
+export async function createSheet(req: any) {
+  const { spreadsheetId, access_token, sheetTitle } = req as {
+    title: string;
+    access_token: string;
+    sheetTitle: string;
+    spreadsheetId: string;
+  };
+  try {
+    const requests = [
+      {
+        addSheet: {
+          properties: {
+            title: sheetTitle,
+          },
+        },
+      },
+    ];
+
+    const response = await batchUpdate(spreadsheetId, access_token, requests);
+    console.log('New sheet created successfully:', response);
+    return response;
+  } catch (error) {
+    console.error('Error creating sheet:', error);
+    throw error; // Re-throw for handling in your application
+  }
+}
+
 export async function editSpreadsheet(
   spreadsheetId: string,
   access_token: string,
@@ -190,12 +213,12 @@ export const batchUpdate = async (spreadsheetId: string, access_token: string, r
     const updateResponse = await axios(batchUpdateConfig);
     if (updateResponse.status === 200) {
       console.log('Sheet formatting updated successfully!');
-      return updateResponse;
+      return updateResponse.data;
     } else {
       console.error('Error updating sheet formatting--:', updateResponse);
     }
   } catch (error) {
-    console.error('Error updating sheet formatting:', error);
+    console.error('Error to batch update:', error);
   }
 };
 // Function to read spreadsheet values from a sheet
