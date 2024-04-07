@@ -29,7 +29,6 @@ import {
   editExpenses,
   getDataFromSpecificSheet,
 } from './messageHandler';
-export const chat_id = '1149737484';
 export const sendMessage = async (messageObject: any, messageText: string) => {
   try {
     const axiosInstance = getAxiosInstance();
