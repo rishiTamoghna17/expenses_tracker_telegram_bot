@@ -3,9 +3,12 @@ import {
   TOdayDate,
   checkAccessToken,
   dateForCalculation,
+  editedDateFromMessage,
+  editedValuesFromMessage,
   getCurrentMonth,
   getCurrentYear,
   isFirstDateOfMonth,
+  removeEmptyElements,
   userName,
   valuesFromMessage,
 } from '../utils';
@@ -57,17 +60,22 @@ export const createSpreadSheetProcess = async (messageObject: any) => {
 export const addExpenses = async (messageObject: any) => {
   try {
     const spreadSheetId = await getSpreadSheetFromDb(userName(messageObject));
-    const accessTokn = await checkAccessToken(messageObject);
-    // const date = new Date();
-    const date = new Date(2024, 1, 2);
+    const accessToken = await checkAccessToken(messageObject);
+    const date = new Date();
+    // const date = new Date(2024, 2, 3);
     const sheetTitle = `${getCurrentMonth(date)}-${getCurrentYear(date)}-expense`;
 
     console.log('to date---------: ', TOdayDate(date));
     const todayString = TOdayDate(date);
     const sheetrange = `${sheetTitle}!A3:A`;
-    const req = { messageObject: messageObject, range: sheetrange };
+    const req = {
+      range: sheetrange,
+      accessToken: accessToken,
+      spreadSheetId: spreadSheetId,
+      messageObject: messageObject,
+    };
     const dateValueArr = await getDataFromSpecificSheet(req);
-    console.log('dateValueArr---------: ', dateValueArr);
+    console.log('dateValueArr---------: ', dateValueArr); //
     let expenseData: any;
     if (dateValueArr && dateValueArr?.includes(todayString)) {
       const valuesFromMessageParams = { messageObject: messageObject, date: date };
@@ -78,13 +86,13 @@ export const addExpenses = async (messageObject: any) => {
       const value = valuesFromMessage(valuesFromMessageParams);
       expenseData = dailyExpenseValues({ value: value, date: date });
       console.log(' totalDailyExpenseValue---------: ', expenseData);
-      console.log('Date npt present present');
+      console.log('Date not present present');
     }
 
-    const sheetId = spreadSheetId && (await getLatestSheetId(spreadSheetId, accessTokn));
+    const sheetId = spreadSheetId && (await getLatestSheetId(spreadSheetId, accessToken));
     const rex = {
       spreadsheetId: spreadSheetId,
-      accessToken: accessTokn,
+      accessToken: accessToken,
       range: `${sheetTitle}!A:E`,
       values: [expenseData],
       sheetId: sheetId,
@@ -93,14 +101,14 @@ export const addExpenses = async (messageObject: any) => {
     if (isFirstDateOfMonth(date) && dateValueArr === null) {
       const sheetParams = {
         spreadsheetId: spreadSheetId,
-        access_token: accessTokn,
+        access_token: accessToken,
         sheetTitle: `${getCurrentMonth(date)}-${getCurrentYear(date)}-expense`,
       };
       const newSheet = await createSheet(sheetParams);
       const sheetId = newSheet.replies[0].addSheet.properties.sheetId;
       const sheetTitle = `${getCurrentMonth(date)}-${getCurrentYear(date)}-expense`;
       const parameter = {
-        access_token: accessTokn,
+        access_token: accessToken,
         sheetTitle: sheetTitle,
         spreadsheetId: spreadSheetId,
         sheetId: sheetId,
@@ -114,7 +122,7 @@ export const addExpenses = async (messageObject: any) => {
 
       const paramForNewSheet = {
         spreadsheetId: spreadSheetId,
-        accessToken: accessTokn,
+        accessToken: accessToken,
         range: `${sheetTitle}!A:E`,
         values: [expenseDataForNewSheet],
         sheetId: sheetId,
@@ -124,7 +132,6 @@ export const addExpenses = async (messageObject: any) => {
       sendMessage(messageObject, 'new sheet added for this month');
       return expenseAdded;
     }
-
     const expenseAdded = await appendRow(rex);
     console.log('expenseAdded------------>', expenseAdded);
     if (!expenseAdded) {
@@ -136,6 +143,68 @@ export const addExpenses = async (messageObject: any) => {
     return expenseAdded;
   } catch (err) {
     console.log({ message: 'err in addExpenses', err: err });
+  }
+};
+
+export const editExpenses = async (messageObject: any) => {
+  try {
+    const messageText = (messageObject as { text: string }).text || '';
+    const messagetext = messageText.substr(1).split(' ');
+    // messageObject.
+    // [[date, 'Groceries', '7000', 'online', 'Daily expenses']];
+    const messages = removeEmptyElements(messagetext);
+    console.log('check------------>>>1', messages);
+    if (messages.length < 5) {
+      return sendMessage(
+        messageObject,
+        `Sorry, your command looks like this : ${messageObject.text} \n your command must look like \n this: /edit date catagory amount paymentMethod \n example: /edit 24/6/2024 groceries 7000 online ;  \n another example: /edit 24-06-2023 food 500 cash`,
+      );
+    } else {
+      console.log('check------------>>>2');
+
+      const dateValuesFromMessageParams = { messageObject: messageObject };
+      const date = editedDateFromMessage(dateValuesFromMessageParams);
+
+      console.log('edited date------->', date);
+
+      const spreadSheetId = await getSpreadSheetFromDb(userName(messageObject));
+      const accessToken = await checkAccessToken(messageObject);
+      const sheetTitle = date && `${getCurrentMonth(date)}-${getCurrentYear(date)}-expense`;
+      console.log('sheetTitle----->>', sheetTitle);
+      const sheetId = spreadSheetId && (await getLatestSheetId(spreadSheetId, accessToken));
+      const sheetrange = `${sheetTitle}!A3:A`;
+      const req = {
+        range: sheetrange,
+        accessToken: accessToken,
+        spreadSheetId: spreadSheetId,
+        messageObject: messageObject,
+      };
+      const dateValueArr = await getDataFromSpecificSheet(req);
+      console.log('dateValueArr---------: ', dateValueArr);
+
+      if (dateValueArr.length > 0) {
+        const valuesFromMessageParams = { messageObject: messageObject, date: date };
+        const expenseData = editedValuesFromMessage(valuesFromMessageParams);
+        console.log('expenseData------------------->>', expenseData);
+        const rex = {
+          spreadsheetId: spreadSheetId,
+          accessToken: accessToken,
+          range: `${sheetTitle}!A:E`,
+          values: [expenseData],
+          sheetId: sheetId,
+        };
+        console.log('rex------------------->>', rex);
+        const expenseAdded = await appendRow(rex);
+        return expenseAdded;
+      } else {
+        return sendMessage(
+          messageObject,
+          'sorry, date does not exist in this sheet , enter a valid date',
+        );
+      }
+    }
+  } catch (err) {
+    console.log({ message: 'err in editExpense', err: err });
   }
 };
 
@@ -173,17 +242,16 @@ export const dailyExpenseValues = (req: any) => {
 
 export const getDataFromSpecificSheet = async (req: any) => {
   try {
-    const { messageObject, range } = req;
-    const accessTokenData = await checkAccessToken(messageObject);
-    const getGoogleAuthData = getGoogleAuth(accessTokenData);
-    const spreadSheetId = await getSpreadSheetFromDb(userName(messageObject));
+    const { range, accessToken, spreadSheetId, messageObject } = req;
+    console.log('req---------------->', req);
+    const getGoogleAuthData = getGoogleAuth(accessToken);
     const params = {
       range: range,
       spreadsheetId: spreadSheetId,
       auth: getGoogleAuthData,
     };
     const getSpreadsheet = await getFromSheetsUingGoogleSdk(params);
-    console.log('getSpreadsheet', getSpreadsheet);
+    console.log('getSpreadsheet--------->>', getSpreadsheet);
     if (!getSpreadsheet) {
       return null;
     }

@@ -23,7 +23,12 @@ import {
   getFromSheetsUingGoogleSdk,
   rowEntry,
 } from './googlesheet-sdk';
-import { addExpenses, createSpreadSheetProcess, getDataFromSpecificSheet } from './messageHandler';
+import {
+  addExpenses,
+  createSpreadSheetProcess,
+  editExpenses,
+  getDataFromSpecificSheet,
+} from './messageHandler';
 export const chat_id = '1149737484';
 export const sendMessage = async (messageObject: any, messageText: string) => {
   try {
@@ -72,6 +77,9 @@ export const handleMessage = async (messageObject: any) => {
             addExpense.tableRange && sendMessage(messageObject, 'Expenses are added successfully')
           );
 
+        case 'edit':
+          const editExpense = await editExpenses(messageObject);
+          return editExpense && sendMessage(messageObject, 'Expenses are edited successfully');
         case 'get_spread_sheet':
           const accessTokenData = await checkAccessToken(messageObject);
 
@@ -93,9 +101,9 @@ export const handleMessage = async (messageObject: any) => {
           return await sendMessage(messageObject, 'getSpreadsheet?.data?.spreadsheetUrl');
 
         case 'test':
-          console.log('user name-------->>', userName(messageObject));
-          const test = await getDataFromSpecificSheet({ messageObject: messageObject });
-          console.log('test===========>>', test);
+          // console.log('user name-------->>', userName(messageObject));
+          // const test = await getDataFromSpecificSheet({ messageObject: messageObject });
+          // console.log('test===========>>', test);
           // createSheet()
           // const spreadSheetId = '1LlJmduV-w0dUIONdEzV3J6eecW94V-e3pDrUtwtXZa0';
           // const accessTokn = await checkAccessToken(messageObject);

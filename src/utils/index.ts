@@ -54,14 +54,15 @@ export const valuesFromMessage = (req: any) => {
   try {
     const { messageObject, date } = req;
     const messageText = (messageObject as { text: string }).text || '';
-    const messages = messageText.substr(1).split(' ');
+    const messagetext = messageText.substr(1).split(' ');
     // messageObject.
     // [[date, 'Groceries', '7000', 'online', 'Daily expenses']];
-    console.log('messages---------->', messages);
+    console.log('messages---------->', messagetext);
+    const messages = removeEmptyElements(messagetext);
     if (messages.length < 4) {
       return sendMessage(
         messageObject,
-        `Sorry, your command looks like this : ${messageObject.text} \n your command must look like \n this: /new catagory amount paymentMethod \n example: /new groceries 7000 online ;  \n another example: /new food 500 cash`,
+        `Sorry, your command looks like this : ${messageObject.text} \n your command must look like \n this: /new catagory amount paymentMethod \n example: /new groceries 7000 online ;  \n another example: /new food 500 cash or may be your command has some space available`,
       );
     }
     const dateData = TOdayDate(date);
@@ -74,6 +75,70 @@ export const valuesFromMessage = (req: any) => {
   } catch (err) {
     console.log('err in values', err);
   }
+};
+
+export const editedValuesFromMessage = (req: any) => {
+  try {
+    const { messageObject, date } = req;
+    const messageText = (messageObject as { text: string }).text || '';
+    const messagetext = messageText.substr(1).split(' ');
+    // messageObject.
+    // [[date, 'Groceries', '7000', 'online', 'Daily expenses']];
+    console.log('messages---------->', messagetext);
+    const messages = removeEmptyElements(messagetext);
+    const dateData = TOdayDate(date);
+    messages[0] = dateData;
+    messages.splice(1, 1); // 2nd parameter means remove one item only
+    console.log('new messages -------->>', messages);
+    const messageArray = messages.map((message) => {
+      return message.trim().toLowerCase();
+    });
+    return messageArray;
+  } catch (err) {
+    console.log('err in editedValuesFromMessage', err);
+  }
+};
+
+export const editedDateFromMessage = (req: any) => {
+  try {
+    const { messageObject } = req;
+    const messageText = (messageObject as { text: string }).text || '';
+    const messages = messageText.substr(1).split(' ');
+    // messageObject.
+    // [[date, 'Groceries', '7000', 'online', 'Daily expenses']];
+    if (messages.length < 5) {
+      return null;
+    }
+    const inputDate = messages[1];
+
+    // Parse the input date string manually
+    const parts = inputDate.split(/[\-/]/);
+    const day = parseInt(parts[0], 10);
+    const month = parseInt(parts[1], 10) - 1; // Months are zero-based
+    const year = parseInt(parts[2], 10);
+
+    // Construct a valid Date object
+    const date = new Date(year, month, day);
+
+    // Optionally, you can check if the constructed date is valid
+    if (isNaN(date.getTime())) {
+      throw new Error('Invalid date');
+    }
+
+    // const dateData = TOdayDate(date);
+    return date;
+  } catch (err) {
+    console.log('err in editedDateFromMessage', err);
+  }
+};
+
+export const removeEmptyElements = (messages: string[]) => {
+  let index = messages.findIndex((message) => message.trim() === '');
+  while (index !== -1) {
+    messages.splice(index, 1);
+    index = messages.findIndex((message) => message.trim() === '');
+  }
+  return messages;
 };
 
 export const getCurrentMonth = (date: Date) => {
