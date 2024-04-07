@@ -26,6 +26,15 @@ import { getFromSheetsUingGoogleSdk } from './googlesheet-sdk';
 export const createSpreadSheetProcess = async (messageObject: any) => {
   try {
     const access_token = await checkAccessToken(messageObject);
+    const spreadSheetId = await getSpreadSheetFromDb(userName(messageObject));
+    if (spreadSheetId) {
+      const spreadsheetUrl = `https://docs.google.com/spreadsheets/d/${spreadSheetId}`;
+      return {
+        message:
+          'Spreadsheet is present in your google account. \n if you delete this spreadsheet, please use url and restore it.',
+        data: spreadsheetUrl,
+      };
+    }
     const date = new Date();
     const sheetTitle = `${getCurrentMonth(date)}-${getCurrentYear(date)}-expense`;
     const title = 'Monthly expense report';
@@ -48,7 +57,7 @@ export const createSpreadSheetProcess = async (messageObject: any) => {
     const secondRow = await addSheet(parameter);
     return (
       secondRow && {
-        message: 'Spreadsheet created successfully',
+        message: `Spreadsheet created successfully!!! \n The spreadsheet name is: ${title}`,
         data: newSpreadsheet.spreadsheetUrl,
       }
     );

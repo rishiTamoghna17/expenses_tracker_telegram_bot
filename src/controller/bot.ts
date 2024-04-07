@@ -64,10 +64,11 @@ export const handleMessage = async (messageObject: any) => {
           sendMessage(messageObject, 'creating Spreadsheet..... just wait a second.........');
           const newSpreadsheet = await createSpreadSheetProcess(messageObject);
           const newSpreadsheetUrl = newSpreadsheet && newSpreadsheet.data;
+          const newSpreadsheetmessage = newSpreadsheet && newSpreadsheet.message;
           console.log('newSpreadsheet---->>', newSpreadsheet);
           return sendMessage(
             messageObject,
-            `Your first Spreadsheet created successfully!!!! \n The spreadsheet name is: Monthly expense report \n The spreadsheet url is: ${newSpreadsheetUrl}`,
+            `${newSpreadsheetmessage} \n The spreadsheet url is: ${newSpreadsheetUrl}`,
           );
 
         case 'new':
