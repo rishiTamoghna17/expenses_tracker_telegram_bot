@@ -23,7 +23,7 @@
     "test": " mocha -require ts-node/register 'test/**.ts'",
     "postinstall": "husky install",
     "build": "npx tsc",
-    "start": "npx tsc && nodemon dist/index.js",
+    "start": "npx tsc && node dist/index.js",
     "dev": "nodemon src/index.ts",
     "ngrok": "C:\\ngrok\\ngrok.exe http 3000"
   },
