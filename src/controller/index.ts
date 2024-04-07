@@ -38,10 +38,10 @@ export const handler = async (req: Request, method?: string) => {
       //   console.log('readSheetValues---------->', data && data.data);
       //   return data && data.data;
       // }
-      if (req.url === '/testSuparBase') {
-        console.log('supabase---------->', supabase);
-        return 'supabase client detected';
-      }
+      // if (req.url === '/testSuparBase') {
+      //   console.log('supabase---------->', supabase);
+      //   return 'supabase client detected';
+      // }
       // if (req.url === '/updateRefreshTokenInDB') {
       //   updateRefreshTokenInDB('1234567890');
       //   console.log('updateRefreshTokenInDB---------->');
