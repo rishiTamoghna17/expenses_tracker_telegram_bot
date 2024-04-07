@@ -35,6 +35,12 @@ export const TOdayDate = (date: Date) => {
   // Print the formatted date
   return formattedDate;
 };
+export const dateForCalculation = (date: Date) => {
+  const year = date.getFullYear();
+  const month = date.getMonth() + 1; // January is 0
+  const day = date.getDate();
+  return `DATE(${year},${month},${day})`;
+};
 
 export const isFirstDateOfMonth = (date: Date): boolean => {
   // Extract the day component of the date
@@ -44,8 +50,9 @@ export const isFirstDateOfMonth = (date: Date): boolean => {
   return day === 1;
 };
 
-export const valuesFromMessage = (messageObject: any) => {
+export const valuesFromMessage = (req: any) => {
   try {
+    const { messageObject, date } = req;
     const messageText = (messageObject as { text: string }).text || '';
     const messages = messageText.substr(1).split(' ');
     // messageObject.
@@ -57,8 +64,9 @@ export const valuesFromMessage = (messageObject: any) => {
         `Sorry, your command looks like this : ${messageObject.text} \n your command must look like \n this: /new catagory amount paymentMethod \n example: /new groceries 7000 online ;  \n another example: /new food 500 cash`,
       );
     }
-    const date = TOdayDate(new Date());
-    messages[0] = date;
+    const dateData = TOdayDate(date);
+    messages[0] = dateData;
+    console.log('new messages -------->>', messages);
     const messageArray = messages.map((message) => {
       return message.trim().toLowerCase();
     });

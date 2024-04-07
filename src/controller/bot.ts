@@ -71,7 +71,7 @@ export const handleMessage = async (messageObject: any) => {
           console.log('newSpreadsheet---->>', newSpreadsheet);
           return sendMessage(
             messageObject,
-            `Your first Spreadsheet created successfully!!!! \n The spreadsheet name is: MOnthly expense report \n The spreadsheet url is: ${newSpreadsheetUrl}`,
+            `Your first Spreadsheet created successfully!!!! \n The spreadsheet name is: Monthly expense report \n The spreadsheet url is: ${newSpreadsheetUrl}`,
           );
 
         case 'new':

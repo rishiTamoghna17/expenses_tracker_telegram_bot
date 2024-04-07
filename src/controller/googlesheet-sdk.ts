@@ -16,6 +16,7 @@ export const getFromSheetsUingGoogleSdk = (req: any) => {
             return failed(err);
           }
           const rows = res.data.values;
+          if (!rows) success(null);
           success(rows);
         },
       );
@@ -33,7 +34,6 @@ export const editSpreadsheetUingGoogleSdk = (req: any) => {
   };
   try {
     const sheets = google.sheets({ version: 'v4', auth: accessTokn });
-    console.log('checl-----------1', sheets, 'end------------------------||');
     // Define the requests to make the desired changes
     const requests: sheets_v4.Schema$Request[] = [
       // Freeze the first two rows
