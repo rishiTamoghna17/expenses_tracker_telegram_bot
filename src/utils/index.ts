@@ -95,6 +95,10 @@ export const getCurrentMonth = (date: Date) => {
   return months[now.getMonth()];
 };
 
+export const getCurrentYear = (date: Date) => {
+  return date.getFullYear();
+};
+
 export const userName = (messageObject: any) => {
   const {
     chat: { first_name, last_name },

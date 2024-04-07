@@ -4,6 +4,7 @@ import {
   checkAccessToken,
   dateForCalculation,
   getCurrentMonth,
+  getCurrentYear,
   isFirstDateOfMonth,
   userName,
   valuesFromMessage,
@@ -19,9 +20,18 @@ import {
 } from './googleSheet';
 import { getFromSheetsUingGoogleSdk } from './googlesheet-sdk';
 
-export const createSpreadSheetProcess = async (req: any) => {
+export const createSpreadSheetProcess = async (messageObject: any) => {
   try {
-    const { access_token, sheetTitle, messageObject } = req;
+    const access_token = await checkAccessToken(messageObject);
+    const date = new Date();
+    const sheetTitle = `${getCurrentMonth(date)}-${getCurrentYear(date)}-expense`;
+    const title = 'Monthly expense report';
+    const req = {
+      access_token: access_token,
+      sheetTitle: sheetTitle,
+      messageObject: messageObject,
+      title: title,
+    };
     const newSpreadsheet = await createSpreadsheet(req);
     const spreadsheetId = newSpreadsheet.spreadsheetId;
     await updatespreadsheetIdInDB(spreadsheetId, userName(messageObject));
@@ -43,31 +53,14 @@ export const createSpreadSheetProcess = async (req: any) => {
     console.log({ message: 'err in createSpreadsheet', err: err });
   }
 };
-const addSheet = async (req: any) => {
-  try {
-    const { access_token, sheetTitle, spreadsheetId, sheetId } = req;
-    await editSpreadsheet(spreadsheetId, access_token, sheetId, sheetTitle);
-    const parameter = {
-      spreadsheetId: spreadsheetId,
-      accessToken: access_token,
-      range: `${sheetTitle}!A:E`,
-      values: [['Data', 'Category', 'Amount', 'Payment Method', 'Daily expenses']],
-      backgroundColor: true,
-      sheetId: sheetId,
-    };
-    const secondRow = await appendRow(parameter);
-    return secondRow;
-  } catch (err) {
-    console.log({ message: 'err in addSheet', err: err });
-  }
-};
+
 export const addExpenses = async (messageObject: any) => {
   try {
     const spreadSheetId = await getSpreadSheetFromDb(userName(messageObject));
     const accessTokn = await checkAccessToken(messageObject);
-    const date = new Date();
-    // const date = new Date(2024, 0, 2)
-    const sheetTitle = `${getCurrentMonth(date)}-expense`;
+    // const date = new Date();
+    const date = new Date(2024, 1, 2);
+    const sheetTitle = `${getCurrentMonth(date)}-${getCurrentYear(date)}-expense`;
 
     console.log('to date---------: ', TOdayDate(date));
     const todayString = TOdayDate(date);
@@ -88,11 +81,6 @@ export const addExpenses = async (messageObject: any) => {
       console.log('Date npt present present');
     }
 
-    // const expenseData = valuesFromMessage(messageObject);
-    // console.log(' expenseData---------: ', expenseData);
-    // const totalDailyExpenseValue = dailyExpenseValues({ value: expenseData, date: date });
-    // console.log(' totalDailyExpenseValue---------: ', totalDailyExpenseValue);
-
     const sheetId = spreadSheetId && (await getLatestSheetId(spreadSheetId, accessTokn));
     const rex = {
       spreadsheetId: spreadSheetId,
@@ -106,11 +94,11 @@ export const addExpenses = async (messageObject: any) => {
       const sheetParams = {
         spreadsheetId: spreadSheetId,
         access_token: accessTokn,
-        sheetTitle: `${getCurrentMonth(date)}-expense`,
+        sheetTitle: `${getCurrentMonth(date)}-${getCurrentYear(date)}-expense`,
       };
       const newSheet = await createSheet(sheetParams);
       const sheetId = newSheet.replies[0].addSheet.properties.sheetId;
-      const sheetTitle = `${getCurrentMonth(date)}-expense`;
+      const sheetTitle = `${getCurrentMonth(date)}-${getCurrentYear(date)}-expense`;
       const parameter = {
         access_token: accessTokn,
         sheetTitle: sheetTitle,
@@ -137,8 +125,6 @@ export const addExpenses = async (messageObject: any) => {
       return expenseAdded;
     }
 
-    // console.log('testdate->', testdate, 'formattedDate->', formattedDate);
-
     const expenseAdded = await appendRow(rex);
     console.log('expenseAdded------------>', expenseAdded);
     if (!expenseAdded) {
@@ -150,6 +136,25 @@ export const addExpenses = async (messageObject: any) => {
     return expenseAdded;
   } catch (err) {
     console.log({ message: 'err in addExpenses', err: err });
+  }
+};
+
+const addSheet = async (req: any) => {
+  try {
+    const { access_token, sheetTitle, spreadsheetId, sheetId } = req;
+    await editSpreadsheet(spreadsheetId, access_token, sheetId, sheetTitle);
+    const parameter = {
+      spreadsheetId: spreadsheetId,
+      accessToken: access_token,
+      range: `${sheetTitle}!A:E`,
+      values: [['Data', 'Category', 'Amount', 'Payment Method', 'Daily expenses']],
+      backgroundColor: true,
+      sheetId: sheetId,
+    };
+    const secondRow = await appendRow(parameter);
+    return secondRow;
+  } catch (err) {
+    console.log({ message: 'err in addSheet', err: err });
   }
 };
 
@@ -186,7 +191,7 @@ export const getDataFromSpecificSheet = async (req: any) => {
     console.log('extractDates----->', extractDates);
     return extractDates;
   } catch (err) {
-    console.log({ message: 'err in getDataFromSpecificSheet', err: err });
+    console.log({ message: 'err in getDataFromSpecificSheet---------------->>>>' });
     return null;
   }
 };

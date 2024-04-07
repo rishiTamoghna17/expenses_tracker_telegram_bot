@@ -6,6 +6,7 @@ export async function createSpreadsheet(req: any) {
     access_token: string;
     sheetTitle: string;
   };
+  console.log('title----------------------->>', title);
   try {
     const url = 'https://sheets.googleapis.com/v4/spreadsheets';
     const asiosData = {
