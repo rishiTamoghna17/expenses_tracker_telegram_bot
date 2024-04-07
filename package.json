@@ -22,7 +22,7 @@
     "check-format": "prettier --ignore-path .gitignore --check \"**/*.+(js|ts|json)\"",
     "test": " mocha -require ts-node/register 'test/**.ts'",
     "postinstall": "husky install",
-    "build": "npx tsc",
+    "build": "tsc",
     "start": "tsc && node dist/index.js",
     "dev": "nodemon src/index.ts",
     "ngrok": "C:\\ngrok\\ngrok.exe http 3000"
