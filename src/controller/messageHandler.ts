@@ -23,9 +23,10 @@ import {
 } from './googleSheet';
 import { getFromSheetsUingGoogleSdk } from './googlesheet-sdk';
 
-export const createSpreadSheetProcess = async (messageObject: any) => {
+export const createSpreadSheetProcess = async (params: any) => {
   try {
-    const access_token = await checkAccessToken(messageObject);
+    const {messageObject,access_token} =params;
+    
     const spreadSheetId = await getSpreadSheetFromDb(userName(messageObject));
     if (spreadSheetId) {
       const spreadsheetUrl = `https://docs.google.com/spreadsheets/d/${spreadSheetId}`;
@@ -66,10 +67,10 @@ export const createSpreadSheetProcess = async (messageObject: any) => {
   }
 };
 
-export const addExpenses = async (messageObject: any) => {
+export const addExpenses = async (params: any) => {
   try {
+    const {messageObject,access_token} =params;
     const spreadSheetId = await getSpreadSheetFromDb(userName(messageObject));
-    const accessToken = await checkAccessToken(messageObject);
     const date = new Date();
     // const date = new Date(2024, 2, 3);
     const sheetTitle = `${getCurrentMonth(date)}-${getCurrentYear(date)}-expense`;
@@ -79,7 +80,7 @@ export const addExpenses = async (messageObject: any) => {
     const sheetrange = `${sheetTitle}!A3:A`;
     const req = {
       range: sheetrange,
-      accessToken: accessToken,
+      accessToken: access_token,
       spreadSheetId: spreadSheetId,
       messageObject: messageObject,
     };
@@ -98,10 +99,10 @@ export const addExpenses = async (messageObject: any) => {
       console.log('Date not present present');
     }
 
-    const sheetId = spreadSheetId && (await getLatestSheetId(spreadSheetId, accessToken));
+    const sheetId = spreadSheetId && (await getLatestSheetId(spreadSheetId, access_token));
     const rex = {
       spreadsheetId: spreadSheetId,
-      accessToken: accessToken,
+      accessToken: access_token,
       range: `${sheetTitle}!A:E`,
       values: [expenseData],
       sheetId: sheetId,
@@ -110,14 +111,14 @@ export const addExpenses = async (messageObject: any) => {
     if (isFirstDateOfMonth(date) && dateValueArr === null) {
       const sheetParams = {
         spreadsheetId: spreadSheetId,
-        access_token: accessToken,
+        access_token: access_token,
         sheetTitle: `${getCurrentMonth(date)}-${getCurrentYear(date)}-expense`,
       };
       const newSheet = await createSheet(sheetParams);
       const sheetId = newSheet.replies[0].addSheet.properties.sheetId;
       const sheetTitle = `${getCurrentMonth(date)}-${getCurrentYear(date)}-expense`;
       const parameter = {
-        access_token: accessToken,
+        access_token: access_token,
         sheetTitle: sheetTitle,
         spreadsheetId: spreadSheetId,
         sheetId: sheetId,
@@ -131,7 +132,7 @@ export const addExpenses = async (messageObject: any) => {
 
       const paramForNewSheet = {
         spreadsheetId: spreadSheetId,
-        accessToken: accessToken,
+        accessToken: access_token,
         range: `${sheetTitle}!A:E`,
         values: [expenseDataForNewSheet],
         sheetId: sheetId,
@@ -155,8 +156,9 @@ export const addExpenses = async (messageObject: any) => {
   }
 };
 
-export const editExpenses = async (messageObject: any) => {
+export const editExpenses = async (params: any) => {
   try {
+    const {messageObject,access_token} =params;
     const messageText = (messageObject as { text: string }).text || '';
     const messagetext = messageText.substr(1).split(' ');
     // messageObject.
@@ -177,14 +179,13 @@ export const editExpenses = async (messageObject: any) => {
       console.log('edited date------->', date);
 
       const spreadSheetId = await getSpreadSheetFromDb(userName(messageObject));
-      const accessToken = await checkAccessToken(messageObject);
       const sheetTitle = date && `${getCurrentMonth(date)}-${getCurrentYear(date)}-expense`;
       console.log('sheetTitle----->>', sheetTitle);
-      const sheetId = spreadSheetId && (await getLatestSheetId(spreadSheetId, accessToken));
+      const sheetId = spreadSheetId && (await getLatestSheetId(spreadSheetId, access_token));
       const sheetrange = `${sheetTitle}!A3:A`;
       const req = {
         range: sheetrange,
-        accessToken: accessToken,
+        accessToken: access_token,
         spreadSheetId: spreadSheetId,
         messageObject: messageObject,
       };
@@ -197,7 +198,7 @@ export const editExpenses = async (messageObject: any) => {
         console.log('expenseData------------------->>', expenseData);
         const rex = {
           spreadsheetId: spreadSheetId,
-          accessToken: accessToken,
+          accessToken: access_token,
           range: `${sheetTitle}!A:E`,
           values: [expenseData],
           sheetId: sheetId,
