@@ -154,7 +154,6 @@ export const addExpenses = async (messageObject: any) => {
     console.log({ message: 'err in addExpenses', err: err });
   }
 };
-
 export const editExpenses = async (messageObject: any) => {
   try {
     const access_token = await checkAccessToken(messageObject);
@@ -215,6 +214,21 @@ export const editExpenses = async (messageObject: any) => {
     }
   } catch (err) {
     console.log({ message: 'err in editExpense', err: err });
+  }
+};
+
+export const getSpreadSheet = async (messageObject: any) => {
+  try {
+    const spreadSheetId = await getSpreadSheetFromDb(userName(messageObject));
+    if (spreadSheetId) {
+      const spreadsheetUrl = `https://docs.google.com/spreadsheets/d/${spreadSheetId}`;
+      return {
+        message: 'Spreadsheet is present in your google account. ',
+        data: spreadsheetUrl,
+      };
+    }
+  } catch (err) {
+    console.log('error comes from getSpreadSheet', err);
   }
 };
 

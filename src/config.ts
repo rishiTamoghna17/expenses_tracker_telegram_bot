@@ -7,7 +7,7 @@ export const DATABASE_URL = process.env.DATABASE_URL || '';
 export const client_id = process.env.client_id || '';
 export const project_id = process.env.project_id || '';
 export const client_secret = process.env.client_secret || '';
-export const redirect_uris = process.env.redirect || '';
+export const redirect_uris = process.env.redirect_uris || '';
 export const googleCredential = {
   web: {
     client_id: client_id,
