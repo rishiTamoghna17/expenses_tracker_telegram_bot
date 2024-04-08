@@ -23,20 +23,18 @@ import {
 } from './googleSheet';
 import { getFromSheetsUingGoogleSdk } from './googlesheet-sdk';
 
-export const createSpreadSheetProcess = async (params: any) => {
+export const createSpreadSheetProcess = async (messageObject: any) => {
   try {
-    const { messageObject, access_token } = params;
-    //check shreadsheet present in db before creating new sheet...
-
-    // const spreadSheetId = await getSpreadSheetFromDb(userName(messageObject));
-    // if (spreadSheetId) {
-    //   const spreadsheetUrl = `https://docs.google.com/spreadsheets/d/${spreadSheetId}`;
-    //   return {
-    //     message:
-    //       'Spreadsheet is present in your google account. \n if you delete this spreadsheet, please use url and restore it.',
-    //     data: spreadsheetUrl,
-    //   };
-    // }
+    const access_token = await checkAccessToken(messageObject);
+    const spreadSheetId = await getSpreadSheetFromDb(userName(messageObject));
+    if (spreadSheetId) {
+      const spreadsheetUrl = `https://docs.google.com/spreadsheets/d/${spreadSheetId}`;
+      return {
+        message:
+          'Spreadsheet is present in your google account. \n if you delete this spreadsheet, please use url and restore it.',
+        data: spreadsheetUrl,
+      };
+    }
     const date = new Date();
     const sheetTitle = `${getCurrentMonth(date)}-${getCurrentYear(date)}-expense`;
     const title = 'Monthly expense report';
@@ -68,9 +66,9 @@ export const createSpreadSheetProcess = async (params: any) => {
   }
 };
 
-export const addExpenses = async (params: any) => {
+export const addExpenses = async (messageObject: any) => {
   try {
-    const { messageObject, access_token } = params;
+    const access_token = await checkAccessToken(messageObject);
     const spreadSheetId = await getSpreadSheetFromDb(userName(messageObject));
     const date = new Date();
     // const date = new Date(2024, 2, 3);
@@ -157,9 +155,10 @@ export const addExpenses = async (params: any) => {
   }
 };
 
-export const editExpenses = async (params: any) => {
+export const editExpenses = async (messageObject: any) => {
   try {
-    const { messageObject, access_token } = params;
+    const access_token = await checkAccessToken(messageObject);
+
     const messageText = (messageObject as { text: string }).text || '';
     const messagetext = messageText.substr(1).split(' ');
     // messageObject.

@@ -51,7 +51,6 @@ export const handleMessage = async (messageObject: any) => {
     const messageText = messageObject.text || '';
     if (messageText[0] === '/') {
       const commend = messageText.substr(1).split(' ')[0];
-      let access_token = '';
       switch (commend) {
         case 'start':
           return sendMessage(messageObject, 'Hello, how can I help you?');
@@ -63,11 +62,7 @@ export const handleMessage = async (messageObject: any) => {
 
         case 'creat_spread_sheet':
           sendMessage(messageObject, 'creating Spreadsheet..... just wait a second.........');
-          access_token = await checkAccessToken(messageObject);
-          const newSpreadsheet = await createSpreadSheetProcess({
-            messageObject: messageObject,
-            access_token: access_token,
-          });
+          const newSpreadsheet = await createSpreadSheetProcess(messageObject);
           const newSpreadsheetUrl = newSpreadsheet && newSpreadsheet.data;
           const newSpreadsheetmessage = newSpreadsheet && newSpreadsheet.message;
           console.log('newSpreadsheet---->>', newSpreadsheet);
@@ -77,19 +72,13 @@ export const handleMessage = async (messageObject: any) => {
           );
 
         case 'new':
-          const addExpense = await addExpenses({
-            messageObject: messageObject,
-            access_token: access_token,
-          });
+          const addExpense = await addExpenses(messageObject);
           return (
             addExpense.tableRange && sendMessage(messageObject, 'Expenses are added successfully')
           );
 
         case 'edit':
-          const editExpense = await editExpenses({
-            messageObject: messageObject,
-            access_token: access_token,
-          });
+          const editExpense = await editExpenses(messageObject);
           return editExpense && sendMessage(messageObject, 'Expenses are edited successfully');
         case 'get_spread_sheet':
           const accessTokenData = await checkAccessToken(messageObject);
