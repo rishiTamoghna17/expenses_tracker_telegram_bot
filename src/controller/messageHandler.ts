@@ -23,10 +23,9 @@ import {
 } from './googleSheet';
 import { getFromSheetsUingGoogleSdk } from './googlesheet-sdk';
 
-export const createSpreadSheetProcess = async (params: any) => {
+export const createSpreadSheetProcess = async (messageObject: any) => {
   try {
-    const {messageObject,access_token} =params;
-    
+    const access_token = await checkAccessToken(messageObject);
     const spreadSheetId = await getSpreadSheetFromDb(userName(messageObject));
     if (spreadSheetId) {
       const spreadsheetUrl = `https://docs.google.com/spreadsheets/d/${spreadSheetId}`;
@@ -67,9 +66,9 @@ export const createSpreadSheetProcess = async (params: any) => {
   }
 };
 
-export const addExpenses = async (params: any) => {
+export const addExpenses = async (messageObject: any) => {
   try {
-    const {messageObject,access_token} =params;
+    const access_token = await checkAccessToken(messageObject);
     const spreadSheetId = await getSpreadSheetFromDb(userName(messageObject));
     const date = new Date();
     // const date = new Date(2024, 2, 3);
@@ -156,9 +155,10 @@ export const addExpenses = async (params: any) => {
   }
 };
 
-export const editExpenses = async (params: any) => {
+export const editExpenses = async (messageObject: any) => {
   try {
-    const {messageObject,access_token} =params;
+    const access_token = await checkAccessToken(messageObject);
+
     const messageText = (messageObject as { text: string }).text || '';
     const messagetext = messageText.substr(1).split(' ');
     // messageObject.
