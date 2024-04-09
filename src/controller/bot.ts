@@ -28,6 +28,7 @@ import {
   createSpreadSheetProcess,
   editExpenses,
   getDataFromSpecificSheet,
+  getSpreadSheet
 } from './messageHandler';
 export const sendMessage = async (messageObject: any, messageText: string) => {
   try {
@@ -83,22 +84,13 @@ export const handleMessage = async (messageObject: any) => {
         case 'get_spread_sheet':
           const accessTokenData = await checkAccessToken(messageObject);
 
-          // const spreadsheetId = '1kAG7L2PwjpOv1qUptalc93QlXgrXIMtx-MCVP4CZ1eU';
-          // const range = 'A2:B2';
-          // const getSpreadsheet = await readSheetValues(spreadsheetId, accessTokenData, range);
-          const getGoogleAuthData = getGoogleAuth(accessTokenData);
-          const spreadSheetId = await getSpreadSheetFromDb(userName(messageObject));
-          const req = {
-            range: 'April-expense!A3:A',
-            spreadsheetId: spreadSheetId,
-            auth: getGoogleAuthData,
-          };
-          const getSpreadsheet = await getFromSheetsUingGoogleSdk(req);
-          if (!getSpreadsheet) {
-            return sendMessage(messageObject, 'you are not othorized to do that!!!!');
-          }
-          console.log('getSpreadsheet---->>', getSpreadsheet, 'end-----------\\');
-          return await sendMessage(messageObject, 'getSpreadsheet?.data?.spreadsheetUrl');
+        case 'get_spread_sheet':
+            const accessTokenData = await checkAccessToken(messageObject);
+            const getSpreadsheet = await getSpreadSheet(messageObject);
+            return await sendMessage(
+              messageObject,
+              `${getSpreadsheet?.message} \n The spreadsheet url is: ${getSpreadsheet?.data}`,
+            );
 
         case 'test':
           // console.log('user name-------->>', userName(messageObject));
