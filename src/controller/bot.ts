@@ -81,8 +81,6 @@ export const handleMessage = async (messageObject: any) => {
         case 'edit':
           const editExpense = await editExpenses(messageObject);
           return editExpense && sendMessage(messageObject, 'Expenses are edited successfully');
-        case 'get_spread_sheet':
-          const accessTokenData = await checkAccessToken(messageObject);
 
         case 'get_spread_sheet':
             const accessTokenData = await checkAccessToken(messageObject);
