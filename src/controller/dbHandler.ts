@@ -5,10 +5,12 @@ import { retrieveChatId } from '../utils';
 export const createUserInDb = async (params: { user_id: number; email: string }) => {
   try {
     const { user_id, email } = params;
+    console.log('paramsa-----------', params);
     const { error: updateError } = await supabase
       .from('User')
       .update({ user_id: user_id, is_active: true })
       .eq('email_id', email);
+    console.log('completed CreateUserInDB----------');
 
     if (updateError) {
       throw updateError;
@@ -29,6 +31,7 @@ export const CreateRefreshTokenInDB = async (params: { refresh_token: string; em
         },
       ])
       .select();
+    console.log('completed CreateRefreshTokenInDB----------');
     if (error) throw error;
     return data;
   } catch (error) {
@@ -56,6 +59,8 @@ export const updateRefreshTokenInDB = async (params: { refresh_token: string; em
     if (updateError) {
       throw updateError;
     }
+
+    console.log('Refresh token updated successfully');
   } catch (error) {
     console.log('Error updating refresh token in DB:', error);
     throw error; // Rethrow the error to handle it elsewhere if needed
@@ -111,6 +116,7 @@ export const getRefreshTokenFromDb = async (MessageObject: MessageObjectType) =>
     }
 
     const latestRefreshToken = data[0]?.refresh_token;
+    console.log('Latest refresh token:---------', latestRefreshToken);
     return latestRefreshToken;
   } catch (error) {
     console.log('error to get refresh token from db', error);

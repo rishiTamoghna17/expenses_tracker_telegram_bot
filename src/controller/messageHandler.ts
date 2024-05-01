@@ -35,10 +35,8 @@ export const syncEmail = async (messageObject: MessageObjectType): Promise<{ mes
   try {
     const messageText = (messageObject as { text: string }).text || '';
     const messagetext = messageText.substr(1).split(' ');
-    console.log('messagetext-------->>', messagetext);
     const messages = removeEmptyElements(messagetext);
-    console.log('check------------>>>1', messages);
-    if (messages.length < 5) {
+    if (messages.length < 2) {
       return {
         message: `Sorry, your command must look like \n example: /sync example@gmail.com`,
       };
