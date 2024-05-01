@@ -1,19 +1,40 @@
 import axios from 'axios';
-import { googleCredential } from '../config';
+import { client_id, client_secret, googleCredential, redirect_uris } from '../config';
 import { OAuth2Client } from 'google-auth-library';
+import { google } from 'googleapis';
 export const getNewUrl = async () => {
   try {
-    const url = `https://accounts.google.com/o/oauth2/v2/auth?
-    client_id=${googleCredential.web.client_id}&
-    redirect_uri=${googleCredential.web.redirect_uris[0]}&
-    access_type=offline&
-    response_type=code&
-    scope=https://www.googleapis.com/auth/spreadsheets&
-    state=new_access_token&
-    include_granted_scopes=true&
-    prompt=consent
-    `;
-    return await axios.get(url);
+    // const scopes = [
+    //   'https://www.googleapis.com/auth/spreadsheets',
+    // ];
+    // const url = `https://accounts.google.com/o/oauth2/v2/auth?
+    // client_id=${googleCredential.web.client_id}&
+    // redirect_uri=${googleCredential.web.redirect_uris[0]}&
+    // access_type=offline&
+    // response_type=code&
+    // scope=${scopes.join(' ')}&
+    // state=new_access_token&
+    // include_granted_scopes=true&
+    // prompt=consent
+    // `;
+    // return await axios.get(url);
+
+    const options = {
+      redirect_uri: googleCredential.web.redirect_uris[0],
+      client_id: googleCredential.web.client_id,
+      access_type: 'offline',
+      response_type: 'code',
+      prompt: 'consent',
+      scope: [
+        'https://www.googleapis.com/auth/userinfo.profile',
+        'https://www.googleapis.com/auth/userinfo.email',
+        'https://www.googleapis.com/auth/spreadsheets',
+      ].join(' '),
+    };
+
+    const qs = new URLSearchParams(options);
+    const url = `https://accounts.google.com/o/oauth2/v2/auth?${qs.toString()}`;
+    return url;
   } catch (e) {
     console.log('error in getNewUrl', e);
   }
@@ -70,3 +91,35 @@ export const getGoogleAuth = (accessToken: string) => {
     console.log('err in getGoogleAuth', err);
   }
 };
+type UserType = {
+  sub: string;
+  email: string;
+  email_verified: boolean;
+  name: string;
+  given_name: string;
+  family_name: string;
+  picture: string;
+  locale: string;
+};
+export async function getUserDetail(data: {
+  access_token: string;
+  id_token: string;
+}): Promise<UserType> {
+  try {
+    const { access_token, id_token } = data;
+    const response = await axios.get<UserType>(
+      `https://www.googleapis.com/oauth2/v3/userinfo?alt=json&access_token=${access_token}`,
+      {
+        headers: {
+          Authorization: `Bearer ${id_token}`,
+        },
+      },
+    );
+    console.log('response---------->>>>>>', response.data);
+
+    return response.data;
+  } catch (error) {
+    console.log('error in getUserEmail', error);
+    throw new Error('Failed to fetch user detail');
+  }
+}

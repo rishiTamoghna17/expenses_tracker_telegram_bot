@@ -1,9 +1,9 @@
-import { getNewRefreshToken, getNewUrl, getAccessTOken } from '../lib/google_auth';
+import { getNewRefreshToken, getNewUrl, getAccessTOken, getUserDetail } from '../lib/google_auth';
 import { handleMessage } from './bot';
 import { Request } from 'express';
 import { readSheetValues } from './googleSheet';
 import { supabase } from '../lib/supabaseClient';
-import { getRefreshTokenFromDb, updateRefreshTokenInDB } from './dbHandler';
+import { getRefreshTokenFromDb, CreateRefreshTokenInDB, updateRefreshTokenInDB } from './dbHandler';
 export const handler = async (req: Request, method?: string) => {
   try {
     if (method === 'GET') {
@@ -17,9 +17,17 @@ export const handler = async (req: Request, method?: string) => {
         console.log('get object->>>>>>', req);
         const data = req.query;
         const code = data.code;
+        console.log('code----------->', code);
+
         const refreshtoken = await getNewRefreshToken(code);
-        const refresh_token = refreshtoken.data.refresh_token;
-        await updateRefreshTokenInDB(refresh_token);
+        console.log('refreshtoken.data----------->', refreshtoken.data);
+        const { refresh_token, access_token, id_token } = refreshtoken.data;
+        console.log('access_token----------->', access_token);
+        console.log('id_token----------->', id_token);
+
+        const { email } = await getUserDetail({ access_token, id_token });
+        // await CreateRefreshTokenInDB({refresh_token:refresh_token,email:email});
+        await updateRefreshTokenInDB({ refresh_token: refresh_token, email: email });
         return 'token update successfull in database';
       }
       // if (req.url === '/get-access-token') {

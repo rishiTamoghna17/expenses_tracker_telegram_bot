@@ -219,19 +219,19 @@ export const editExpenses = async (messageObject: any) => {
 };
 
 export const getSpreadSheet = async (messageObject: any) => {
-    try {
-      const spreadSheetId = await getSpreadSheetFromDb(userName(messageObject));
-      if (spreadSheetId) {
-        const spreadsheetUrl = `https://docs.google.com/spreadsheets/d/${spreadSheetId}`;
-        return {
-          message: 'Spreadsheet is present in your google account. ',
-          data: spreadsheetUrl,
-        };
-      }
-    } catch (err) {
-      console.log('error comes from getSpreadSheet', err);
+  try {
+    const spreadSheetId = await getSpreadSheetFromDb(userName(messageObject));
+    if (spreadSheetId) {
+      const spreadsheetUrl = `https://docs.google.com/spreadsheets/d/${spreadSheetId}`;
+      return {
+        message: 'Spreadsheet is present in your google account. ',
+        data: spreadsheetUrl,
+      };
     }
-  };
+  } catch (err) {
+    console.log('error comes from getSpreadSheet', err);
+  }
+};
 
 const addSheet = async (req: any) => {
   try {

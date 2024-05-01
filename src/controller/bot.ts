@@ -7,28 +7,12 @@ import {
   isFirstDateOfMonth,
   userName,
 } from '../utils';
-import { getRefreshTokenFromDb, getSpreadSheetFromDb, updatespreadsheetIdInDB } from './dbHandler';
-import {
-  appendRow,
-  createSheet,
-  createSpreadsheet,
-  editSpreadsheet,
-  getAllSheetIds,
-  getLatestSheetId,
-  getSheetName,
-  readSheetValues,
-} from './googleSheet';
-import {
-  editSpreadsheetUingGoogleSdk,
-  getFromSheetsUingGoogleSdk,
-  rowEntry,
-} from './googlesheet-sdk';
 import {
   addExpenses,
   createSpreadSheetProcess,
   editExpenses,
   getDataFromSpecificSheet,
-  getSpreadSheet
+  getSpreadSheet,
 } from './messageHandler';
 export const sendMessage = async (messageObject: any, messageText: string) => {
   try {
@@ -58,8 +42,7 @@ export const handleMessage = async (messageObject: any) => {
 
         case 'log_in':
           const data = await getNewUrl();
-          const parseUrl = data && data.config.url?.replace(/\s/g, '');
-          return parseUrl && (await sendMessage(messageObject, parseUrl));
+          return data && (await sendMessage(messageObject, data));
 
         case 'creat_spread_sheet':
           sendMessage(messageObject, 'creating Spreadsheet..... just wait a second.........');
@@ -83,12 +66,12 @@ export const handleMessage = async (messageObject: any) => {
           return editExpense && sendMessage(messageObject, 'Expenses are edited successfully');
 
         case 'get_spread_sheet':
-            const accessTokenData = await checkAccessToken(messageObject);
-            const getSpreadsheet = await getSpreadSheet(messageObject);
-            return await sendMessage(
-              messageObject,
-              `${getSpreadsheet?.message} \n The spreadsheet url is: ${getSpreadsheet?.data}`,
-            );
+          const accessTokenData = await checkAccessToken(messageObject);
+          const getSpreadsheet = await getSpreadSheet(messageObject);
+          return await sendMessage(
+            messageObject,
+            `${getSpreadsheet?.message} \n The spreadsheet url is: ${getSpreadsheet?.data}`,
+          );
 
         case 'test':
           // console.log('user name-------->>', userName(messageObject));

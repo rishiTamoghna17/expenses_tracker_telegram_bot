@@ -1,23 +1,67 @@
 import { supabase } from '../lib/supabaseClient';
 
-export const updateRefreshTokenInDB = async (token: string) => {
+export const CreateRefreshTokenInDB = async (params: { refresh_token: string; email: string }) => {
   try {
+    const { refresh_token, email } = params;
     const { data, error } = await supabase
       .from('User')
       .insert([
         {
-          key: 'tele_bot_google_refresh_token',
-          value: token,
+          key: email,
+          value: refresh_token,
         },
       ])
       .select();
-    console.log('completed updateRefreshTokenInDB----------');
+    console.log('completed CreateRefreshTokenInDB----------');
     if (error) throw error;
     return data;
   } catch (error) {
     console.log('error to undate refresh token in db', error);
   }
 };
+
+export const updateRefreshTokenInDB = async (params: { refresh_token: string; email: string }) => {
+  try {
+    const { refresh_token, email } = params;
+
+    // Check if the user exists
+    const user = await userExists(email);
+
+    if (!user) {
+      await CreateRefreshTokenInDB({ refresh_token: refresh_token, email: email });
+    }
+
+    // Update the refresh token
+    const { error: updateError } = await supabase
+      .from('User')
+      .update({ value: refresh_token })
+      .eq('key', email);
+
+    if (updateError) {
+      throw updateError;
+    }
+
+    console.log('Refresh token updated successfully');
+  } catch (error) {
+    console.log('Error updating refresh token in DB:', error);
+    throw error; // Rethrow the error to handle it elsewhere if needed
+  }
+};
+
+async function userExists(email: string): Promise<boolean> {
+  try {
+    const { data, error } = await supabase.from('User').select('id').eq('key', email);
+
+    if (error) {
+      throw error;
+    }
+
+    return !!data && data.length > 0;
+  } catch (error) {
+    console.log('Error checking user existence:', error);
+    throw error; // Rethrow the error to handle it elsewhere if needed
+  }
+}
 
 export const getRefreshTokenFromDb = async () => {
   try {
