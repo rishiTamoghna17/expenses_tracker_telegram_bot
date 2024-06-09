@@ -3,16 +3,10 @@ import { handleMessage } from './bot';
 import { Request } from 'express';
 import { readSheetValues } from './googleSheet';
 import { supabase } from '../lib/supabaseClient';
-import { getRefreshTokenFromDb, CreateRefreshTokenInDB, updateRefreshTokenInDB } from './dbHandler';
+import { updateRefreshTokenInDB } from './dbHandler';
 export const handler = async (req: Request, method?: string) => {
   try {
     if (method === 'GET') {
-      // if (req.url === '/test') {
-      //   const data = await getNewUrl();
-      //   console.log('getNewUrl------------>>>', data);
-      //   const parseUrl = data.config.url?.replace(/\s/g, '');
-      //   return parseUrl;
-      // }
       if (req.path === '/gtoken') {
         console.log('get object->>>>>>', req);
         const data = req.query;
@@ -26,9 +20,8 @@ export const handler = async (req: Request, method?: string) => {
         console.log('id_token----------->', id_token);
 
         const { email } = await getUserDetail({ access_token, id_token });
-        // await CreateRefreshTokenInDB({refresh_token:refresh_token,email:email});
         await updateRefreshTokenInDB({ refresh_token: refresh_token, email: email });
-        return 'token update successfull in database';
+        return 'you can sync with your google account now';
       }
       // if (req.url === '/get-access-token') {
       //   const refreshtoken =
