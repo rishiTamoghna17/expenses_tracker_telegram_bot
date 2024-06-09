@@ -31,7 +31,6 @@ export const CreateRefreshTokenInDB = async (params: { refresh_token: string; em
         },
       ])
       .select();
-    console.log('completed CreateRefreshTokenInDB----------');
     if (error) throw error;
     return data;
   } catch (error) {
@@ -59,8 +58,6 @@ export const updateRefreshTokenInDB = async (params: { refresh_token: string; em
     if (updateError) {
       throw updateError;
     }
-
-    console.log('Refresh token updated successfully');
   } catch (error) {
     console.log('Error updating refresh token in DB:', error);
     throw error; // Rethrow the error to handle it elsewhere if needed
