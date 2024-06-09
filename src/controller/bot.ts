@@ -5,30 +5,16 @@ import {
   checkAccessToken,
   getCurrentMonth,
   isFirstDateOfMonth,
+  retrieveChatId,
   userName,
 } from '../utils';
-import { getRefreshTokenFromDb, getSpreadSheetFromDb, updatespreadsheetIdInDB } from './dbHandler';
-import {
-  appendRow,
-  createSheet,
-  createSpreadsheet,
-  editSpreadsheet,
-  getAllSheetIds,
-  getLatestSheetId,
-  getSheetName,
-  readSheetValues,
-} from './googleSheet';
-import {
-  editSpreadsheetUingGoogleSdk,
-  getFromSheetsUingGoogleSdk,
-  rowEntry,
-} from './googlesheet-sdk';
 import {
   addExpenses,
   createSpreadSheetProcess,
   editExpenses,
   getDataFromSpecificSheet,
-  getSpreadSheet
+  getSpreadSheet,
+  syncEmail,
 } from './messageHandler';
 export const sendMessage = async (messageObject: any, messageText: string) => {
   try {
@@ -54,13 +40,15 @@ export const handleMessage = async (messageObject: any) => {
       const commend = messageText.substr(1).split(' ')[0];
       switch (commend) {
         case 'start':
-          return sendMessage(messageObject, 'Hello, how can I help you?');
-
+          const messages =
+            "Hi, I'm your Personal Expense Tracker. \nLet me help you manage your expenses... \n 1. you have to log in with /log_in command. \n 2. you have to sync your telegram account with gmail id by using /sync example@gmail.com command. \n 3. you can create spreadsheet with /creat_spread_sheet command. \n 4. you can add expenses with /new catagory amount paymentMethod. \n example: /new groceries 7000 online.\n 5. you can add expenses for specific date with /edit date catagory amount paymentMethod. \n example: /edit 24/6/2024 groceries 7000 online.\n 6. you can get spreadsheet with /get_spread_sheet command.";
+          return sendMessage(messageObject, messages);
         case 'log_in':
           const data = await getNewUrl();
-          const parseUrl = data && data.config.url?.replace(/\s/g, '');
-          return parseUrl && (await sendMessage(messageObject, parseUrl));
-
+          return data && (await sendMessage(messageObject, data));
+        case 'sync':
+          const response = await syncEmail(messageObject);
+          return sendMessage(messageObject, response.message);
         case 'creat_spread_sheet':
           sendMessage(messageObject, 'creating Spreadsheet..... just wait a second.........');
           const newSpreadsheet = await createSpreadSheetProcess(messageObject);
@@ -83,12 +71,12 @@ export const handleMessage = async (messageObject: any) => {
           return editExpense && sendMessage(messageObject, 'Expenses are edited successfully');
 
         case 'get_spread_sheet':
-            const accessTokenData = await checkAccessToken(messageObject);
-            const getSpreadsheet = await getSpreadSheet(messageObject);
-            return await sendMessage(
-              messageObject,
-              `${getSpreadsheet?.message} \n The spreadsheet url is: ${getSpreadsheet?.data}`,
-            );
+          const accessTokenData = await checkAccessToken(messageObject);
+          const getSpreadsheet = await getSpreadSheet(messageObject);
+          return await sendMessage(
+            messageObject,
+            `${getSpreadsheet?.message} \n The spreadsheet url is: ${getSpreadsheet?.data}`,
+          );
 
         case 'test':
           // console.log('user name-------->>', userName(messageObject));

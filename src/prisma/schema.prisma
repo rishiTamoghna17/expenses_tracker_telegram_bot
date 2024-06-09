@@ -14,15 +14,18 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  key       String
-  value     String
-  createdAt DateTime @default(now()) // Use `now()` for automatic timestamp
+  id            Int      @id @default(autoincrement())
+  user_id       Int      @default(autoincrement())
+  email_id      String
+  refresh_token String
+  is_active     Boolean  @default(false)
+  createdAt     DateTime @default(now()) // Use `now()` for automatic timestamp
 }
 
 model SpreadSheet {
   id            Int      @id @default(autoincrement())
-  user     String
+  user_id       Int
+  email_id      String
   spreadsheetId String
   createdAt     DateTime @default(now()) // Use `now()` for automatic timestamp
 }

@@ -1,10 +1,10 @@
 import { sendMessage } from '../controller/bot';
 import { getRefreshTokenFromDb } from '../controller/dbHandler';
 import { getAccessTOken } from '../lib/google_auth';
-
+import { MessageObjectType } from '../types';
 export const checkAccessToken = async (messageObject: any) => {
   try {
-    const refreshtoken = await getRefreshTokenFromDb();
+    const refreshtoken = await getRefreshTokenFromDb(messageObject);
     console.log(`get_spread_sheet: refreshtoken: ${refreshtoken}`);
     if (!refreshtoken) {
       return sendMessage(messageObject, 'CANT GET FROM DATABASE');
@@ -16,6 +16,17 @@ export const checkAccessToken = async (messageObject: any) => {
     return accessToken;
   } catch (error) {
     console.error('Error from checkAccessToken:', error);
+  }
+};
+
+export const retrieveChatId = (messageObject: MessageObjectType) => {
+  try {
+    const {
+      chat: { id },
+    } = messageObject;
+    return id;
+  } catch (error) {
+    console.error('Error from retrieveChatId:', error);
   }
 };
 
@@ -62,7 +73,7 @@ export const valuesFromMessage = (req: any) => {
     if (messages.length < 4) {
       return sendMessage(
         messageObject,
-        `Sorry, your command looks like this : ${messageObject.text} \n your command must look like \n this: /new catagory amount paymentMethod \n example: /new groceries 7000 online ;  \n another example: /new food 500 cash or may be your command has some space available`,
+        `Sorry, your command looks like this : ${messageObject.text} \n your command must look like \n this: /new catagory amount paymentMethod \n example: /new groceries 7000 online ;  \n another example: /new food 500 cash.`,
       );
     }
     const dateData = TOdayDate(date);
@@ -139,6 +150,14 @@ export const removeEmptyElements = (messages: string[]) => {
     index = messages.findIndex((message) => message.trim() === '');
   }
   return messages;
+};
+
+export const isValidEmail = (email: string) => {
+  if (!email) {
+    return false; // Handle empty email case
+  }
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Robust email format check
+  return emailRegex.test(email);
 };
 
 export const getCurrentMonth = (date: Date) => {

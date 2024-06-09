@@ -26,7 +26,7 @@ export async function createSpreadsheet(req: any) {
       method: 'post',
       url: url,
       headers: {
-        Authorization: 'Bearer ' + access_token,
+        Authorization: `Bearer ${access_token}`,
         Accept: 'application/json',
       },
       data: asiosData,

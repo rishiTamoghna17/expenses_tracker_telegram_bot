@@ -1,30 +1,107 @@
 import { supabase } from '../lib/supabaseClient';
+import { MessageObjectType } from '../types/index';
+import { retrieveChatId } from '../utils';
 
-export const updateRefreshTokenInDB = async (token: string) => {
+export const createUserInDb = async (params: { user_id: number; email: string }) => {
   try {
+    const { user_id, email } = params;
+    console.log('paramsa-----------', params);
+    const { error: updateError } = await supabase
+      .from('User')
+      .update({ user_id: user_id, is_active: true })
+      .eq('email_id', email);
+    console.log('completed CreateUserInDB----------');
+
+    if (updateError) {
+      throw updateError;
+    }
+  } catch (err) {
+    console.log('error to create user in db :', err);
+  }
+};
+export const CreateRefreshTokenInDB = async (params: { refresh_token: string; email: string }) => {
+  try {
+    const { refresh_token, email } = params;
     const { data, error } = await supabase
       .from('User')
       .insert([
         {
-          key: 'tele_bot_google_refresh_token',
-          value: token,
+          email_id: email,
+          refresh_token: refresh_token,
         },
       ])
       .select();
-    console.log('completed updateRefreshTokenInDB----------');
     if (error) throw error;
     return data;
   } catch (error) {
-    console.log('error to undate refresh token in db', error);
+    console.log('error to creating refresh token in db :', error);
   }
 };
 
-export const getRefreshTokenFromDb = async () => {
+export const updateRefreshTokenInDB = async (params: { refresh_token: string; email: string }) => {
+  try {
+    const { refresh_token, email } = params;
+
+    // Check if the user exists
+    const user = await userExists(email);
+
+    if (!user) {
+      await CreateRefreshTokenInDB({ refresh_token: refresh_token, email: email });
+    }
+
+    // Update the refresh token
+    const { error: updateError } = await supabase
+      .from('User')
+      .update({ refresh_token: refresh_token })
+      .eq('email_id', email);
+
+    if (updateError) {
+      throw updateError;
+    }
+  } catch (error) {
+    console.log('Error updating refresh token in DB:', error);
+    throw error; // Rethrow the error to handle it elsewhere if needed
+  }
+};
+
+export const findEmailFromTheDb = async (user_id: number) => {
   try {
     const { data, error } = await supabase
       .from('User')
-      .select('value') // Only select the 'value' column
-      .eq('key', 'tele_bot_google_refresh_token')
+      .select('email_id') // Only select the 'value' column
+      .eq('user_id', user_id)
+      .order('id', { ascending: false }) // Order by id descending
+      .limit(1); // Limit to 1 row (the latest)
+
+    if (error) throw error;
+    return data[0].email_id;
+  } catch (err) {
+    console.log('Error finding email from the db :', err);
+  }
+};
+
+async function userExists(email: string): Promise<boolean> {
+  try {
+    const { data, error } = await supabase.from('User').select('id').eq('email_id', email);
+
+    if (error) {
+      throw error;
+    }
+
+    return !!data && data.length > 0;
+  } catch (error) {
+    console.log('Error checking user existence:', error);
+    throw error; // Rethrow the error to handle it elsewhere if needed
+  }
+}
+
+export const getRefreshTokenFromDb = async (MessageObject: MessageObjectType) => {
+  try {
+    const chatId = retrieveChatId(MessageObject);
+    const { data, error } = await supabase
+      .from('User')
+      .select('refresh_token') // Only select the 'value' column
+      .eq('user_id', chatId)
       .order('id', { ascending: false }) // Order by id descending
       .limit(1); // Limit to 1 row (the latest)
 
@@ -32,29 +109,32 @@ export const getRefreshTokenFromDb = async () => {
 
     if (data.length === 0) {
       // Handle the case where no records are found
-      console.log('No refresh token found in the database');
       return null; // Or return an empty string/default value
     }
 
-    const latestRefreshToken = data[0].value;
-    // console.log('Latest refresh token:---------', latestRefreshToken);
+    const latestRefreshToken = data[0]?.refresh_token;
+    console.log('Latest refresh token:---------', latestRefreshToken);
     return latestRefreshToken;
   } catch (error) {
     console.log('error to get refresh token from db', error);
   }
 };
-export const updatespreadsheetIdInDB = async (spreadsheetId: string, userName: string) => {
+export const updatespreadsheetIdInDB = async (
+  spreadsheetId: string,
+  user_id: number,
+  email_id: string,
+) => {
   try {
     const { data, error } = await supabase
       .from('SpreadSheet')
       .insert([
         {
-          user: userName,
+          user_id: user_id,
           spreadsheetId: spreadsheetId,
+          email_id: email_id,
         },
       ])
       .select();
-    console.log('completed updatespreadsheetIdInDB----------');
     if (error) throw error;
     return data;
   } catch (error) {
@@ -62,12 +142,12 @@ export const updatespreadsheetIdInDB = async (spreadsheetId: string, userName: s
   }
 };
 
-export const getSpreadSheetFromDb = async (user: string) => {
+export const getSpreadSheetFromDb = async (userId: number) => {
   try {
     const { data, error } = await supabase
       .from('SpreadSheet')
       .select('spreadsheetId') // Only select the 'value' column
-      .eq('user', user)
+      .eq('user_id', userId)
       .order('id', { ascending: false }) // Order by id descending
       .limit(1); // Limit to 1 row (the latest)
 
@@ -75,7 +155,6 @@ export const getSpreadSheetFromDb = async (user: string) => {
 
     if (data.length === 0) {
       // Handle the case where no records are found
-      console.log('No refresh token found in the database');
       return null; // Or return an empty string/default value
     }
     const latestSpreadSheetId: string = data[0].spreadsheetId;

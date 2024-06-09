@@ -1,4 +1,5 @@
 import { getGoogleAuth } from '../lib/google_auth';
+import { MessageObjectType } from '../types';
 import {
   TOdayDate,
   checkAccessToken,
@@ -8,12 +9,19 @@ import {
   getCurrentMonth,
   getCurrentYear,
   isFirstDateOfMonth,
+  isValidEmail,
   removeEmptyElements,
+  retrieveChatId,
   userName,
   valuesFromMessage,
 } from '../utils';
 import { sendMessage } from './bot';
-import { getSpreadSheetFromDb, updatespreadsheetIdInDB } from './dbHandler';
+import {
+  createUserInDb,
+  findEmailFromTheDb,
+  getSpreadSheetFromDb,
+  updatespreadsheetIdInDB,
+} from './dbHandler';
 import {
   getLatestSheetId,
   editSpreadsheet,
@@ -23,10 +31,35 @@ import {
 } from './googleSheet';
 import { getFromSheetsUingGoogleSdk } from './googlesheet-sdk';
 
-export const createSpreadSheetProcess = async (messageObject: any) => {
+export const syncEmail = async (messageObject: MessageObjectType): Promise<{ message: string }> => {
+  try {
+    const messageText = (messageObject as { text: string }).text || '';
+    const messagetext = messageText.substr(1).split(' ');
+    const messages = removeEmptyElements(messagetext);
+    if (messages.length < 2) {
+      return {
+        message: `Sorry, your command must look like \n example: /sync example@gmail.com`,
+      };
+    }
+    const email = removeEmptyElements(messagetext)[1];
+    if (!isValidEmail(email)) {
+      return { message: `your email is not valid` };
+    }
+    console.log('email-------->>', email);
+    const user_id = retrieveChatId(messageObject);
+    user_id && (await createUserInDb({ user_id: user_id, email: email }));
+    return { message: 'your account is synced' };
+  } catch (error) {
+    console.log(error);
+    return { message: 'An error occurred while syncing your account' };
+  }
+};
+export const createSpreadSheetProcess = async (messageObject: MessageObjectType) => {
   try {
     const access_token = await checkAccessToken(messageObject);
-    const spreadSheetId = await getSpreadSheetFromDb(userName(messageObject));
+    const user_id = retrieveChatId(messageObject);
+    console.log('user_id---->>>>>>>>>>>>>>>>>>>', user_id);
+    const spreadSheetId = user_id && (await getSpreadSheetFromDb(user_id));
     if (spreadSheetId) {
       const spreadsheetUrl = `https://docs.google.com/spreadsheets/d/${spreadSheetId}`;
       return {
@@ -41,12 +74,12 @@ export const createSpreadSheetProcess = async (messageObject: any) => {
     const req = {
       access_token: access_token,
       sheetTitle: sheetTitle,
-      messageObject: messageObject,
       title: title,
     };
     const newSpreadsheet = await createSpreadsheet(req);
     const spreadsheetId = newSpreadsheet.spreadsheetId;
-    await updatespreadsheetIdInDB(spreadsheetId, userName(messageObject));
+    const email = user_id && (await findEmailFromTheDb(user_id));
+    user_id && email && (await updatespreadsheetIdInDB(spreadsheetId, user_id, email));
     const latestSheet = await getLatestSheetId(spreadsheetId, access_token);
     const parameter = {
       access_token: access_token,
@@ -69,7 +102,8 @@ export const createSpreadSheetProcess = async (messageObject: any) => {
 export const addExpenses = async (messageObject: any) => {
   try {
     const access_token = await checkAccessToken(messageObject);
-    const spreadSheetId = await getSpreadSheetFromDb(userName(messageObject));
+    const user_id = retrieveChatId(messageObject);
+    const spreadSheetId = user_id && (await getSpreadSheetFromDb(user_id));
     const date = new Date();
     // const date = new Date(2024, 2, 3);
     const sheetTitle = `${getCurrentMonth(date)}-${getCurrentYear(date)}-expense`;
@@ -178,7 +212,8 @@ export const editExpenses = async (messageObject: any) => {
 
       console.log('edited date------->', date);
 
-      const spreadSheetId = await getSpreadSheetFromDb(userName(messageObject));
+      const user_id = retrieveChatId(messageObject);
+      const spreadSheetId = user_id && (await getSpreadSheetFromDb(user_id));
       const sheetTitle = date && `${getCurrentMonth(date)}-${getCurrentYear(date)}-expense`;
       console.log('sheetTitle----->>', sheetTitle);
       const sheetId = spreadSheetId && (await getLatestSheetId(spreadSheetId, access_token));
@@ -219,19 +254,20 @@ export const editExpenses = async (messageObject: any) => {
 };
 
 export const getSpreadSheet = async (messageObject: any) => {
-    try {
-      const spreadSheetId = await getSpreadSheetFromDb(userName(messageObject));
-      if (spreadSheetId) {
-        const spreadsheetUrl = `https://docs.google.com/spreadsheets/d/${spreadSheetId}`;
-        return {
-          message: 'Spreadsheet is present in your google account. ',
-          data: spreadsheetUrl,
-        };
-      }
-    } catch (err) {
-      console.log('error comes from getSpreadSheet', err);
+  try {
+    const user_id = retrieveChatId(messageObject);
+    const spreadSheetId = user_id && (await getSpreadSheetFromDb(user_id));
+    if (spreadSheetId) {
+      const spreadsheetUrl = `https://docs.google.com/spreadsheets/d/${spreadSheetId}`;
+      return {
+        message: 'Spreadsheet is present in your google account. ',
+        data: spreadsheetUrl,
+      };
     }
-  };
+  } catch (err) {
+    console.log('error comes from getSpreadSheet', err);
+  }
+};
 
 const addSheet = async (req: any) => {
   try {
