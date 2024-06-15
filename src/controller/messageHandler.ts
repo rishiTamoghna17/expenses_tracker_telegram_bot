@@ -21,6 +21,7 @@ import {
   findEmailFromTheDb,
   getSpreadSheetFromDb,
   updatespreadsheetIdInDB,
+  userExists,
 } from './dbHandler';
 import {
   getLatestSheetId,
@@ -42,8 +43,13 @@ export const syncEmail = async (messageObject: MessageObjectType): Promise<{ mes
       };
     }
     const email = removeEmptyElements(messagetext)[1];
-    if (!isValidEmail(email)) {
-      return { message: `your email is not valid` };
+    const user = await userExists(email);
+
+    if (!isValidEmail(email) && !user) {
+      return {
+        message:
+          "The email you provided is invalid or you signed in with a different account. Please check your email and try again, or ensure you're using the correct account.",
+      };
     }
     const user_id = retrieveChatId(messageObject);
     user_id && (await createUserInDb({ user_id: user_id, email: email }));
