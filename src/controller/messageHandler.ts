@@ -99,7 +99,7 @@ export const createSpreadSheetProcess = async (messageObject: MessageObjectType)
   }
 };
 
-export const addExpenses = async (messageObject: any) => {
+export const addExpenses = async (messageObject: MessageObjectType) => {
   try {
     const access_token = await checkAccessToken(messageObject);
     const user_id = retrieveChatId(messageObject);
@@ -117,8 +117,8 @@ export const addExpenses = async (messageObject: any) => {
       spreadSheetId: spreadSheetId,
       messageObject: messageObject,
     };
-    const dateValueArr = await getDataFromSpecificSheet(req);
-    console.log('dateValueArr---------: ', dateValueArr); //
+    const dateValueArr = await getDateDataFromSpecificSheet(req);
+    console.log('dateValueArr---------: ', dateValueArr);
     let expenseData: any;
     if (dateValueArr && dateValueArr?.includes(todayString)) {
       const valuesFromMessageParams = { messageObject: messageObject, date: date };
@@ -189,7 +189,7 @@ export const addExpenses = async (messageObject: any) => {
   }
 };
 
-export const editExpenses = async (messageObject: any) => {
+export const editExpenses = async (messageObject: MessageObjectType) => {
   try {
     const access_token = await checkAccessToken(messageObject);
 
@@ -224,7 +224,7 @@ export const editExpenses = async (messageObject: any) => {
         spreadSheetId: spreadSheetId,
         messageObject: messageObject,
       };
-      const dateValueArr = await getDataFromSpecificSheet(req);
+      const dateValueArr = await getDateDataFromSpecificSheet(req);
       console.log('dateValueArr---------: ', dateValueArr);
 
       if (dateValueArr.length > 0) {
@@ -253,7 +253,7 @@ export const editExpenses = async (messageObject: any) => {
   }
 };
 
-export const getSpreadSheet = async (messageObject: any) => {
+export const getSpreadSheet = async (messageObject: MessageObjectType) => {
   try {
     const user_id = retrieveChatId(messageObject);
     const spreadSheetId = user_id && (await getSpreadSheetFromDb(user_id));
@@ -269,6 +269,142 @@ export const getSpreadSheet = async (messageObject: any) => {
   }
 };
 
+export const currentDayTotalExpanses = async (messageObject: MessageObjectType) => {
+  try {
+    const access_token = await checkAccessToken(messageObject);
+    const date = new Date();
+    const sheetTitle = `${getCurrentMonth(date)}-${getCurrentYear(date)}-expense`;
+    const sheetrange = `${sheetTitle}!A:E`;
+    const user_id = retrieveChatId(messageObject);
+    const spreadSheetId = user_id && (await getSpreadSheetFromDb(user_id));
+    const req = {
+      range: sheetrange,
+      accessToken: access_token,
+      spreadSheetId: spreadSheetId,
+    };
+    const data: any = await getDataFromSpecificSheet(req);
+    const todayString = TOdayDate(date);
+
+    let totalAmount = 0;
+
+    // Iterate through the rows and sum up today's amounts
+    for (let i = 1; i < data.length; i++) {
+      // Start from 1 to skip header
+      const row = data[i];
+      const rowDate = row[0];
+      const amount = parseFloat(row[2]) || 0; // Assuming amount is in the third column
+      if (rowDate === todayString) {
+        totalAmount += amount;
+      }
+    }
+
+    console.log(`Today's total amount: ${totalAmount}`);
+    return { message: `Today's total amount: ${totalAmount}`, data: totalAmount };
+  } catch (err) {
+    console.log({ message: 'err in currentDayTotalExpanses', err: err });
+    return { message: `no expenses for today`, data: 0 };
+  }
+};
+
+export const currentDayTotalExpansesDetails = async (messageObject: MessageObjectType) => {
+  try {
+    const access_token = await checkAccessToken(messageObject);
+    const date = new Date();
+    const sheetTitle = `${getCurrentMonth(date)}-${getCurrentYear(date)}-expense`;
+    const sheetrange = `${sheetTitle}!A:E`;
+    const user_id = retrieveChatId(messageObject);
+    const spreadSheetId = user_id && (await getSpreadSheetFromDb(user_id));
+    const req = {
+      range: sheetrange,
+      accessToken: access_token,
+      spreadSheetId: spreadSheetId,
+    };
+    const data: any = await getDataFromSpecificSheet(req);
+    const todayString = TOdayDate(date);
+
+    let totalAmount = 0;
+    const todayExpenses: string[] = [];
+
+    // Iterate through the rows and sum up today's amounts
+    for (let i = 1; i < data.length; i++) {
+      // Start from 1 to skip header
+      const row = data[i];
+      const rowDate = row[0];
+      const category = row[1];
+      const amount = parseFloat(row[2]) || 0; // Assuming amount is in the third column
+      const paymentMethod = row[3];
+
+      if (rowDate === todayString) {
+        totalAmount += amount;
+        todayExpenses.push(`${category} | ${amount} | ${paymentMethod}`);
+      }
+    }
+    console.log('todayExpenses---------------->>>', todayExpenses);
+    // Create the chart representation
+    let chartMessage = "Today's Expenses:\n";
+    chartMessage += 'Category    | Amount | Payment Method\n';
+    chartMessage += '------------------------------------------------\n';
+    todayExpenses.forEach((expense) => {
+      chartMessage += `${expense}\n`;
+    });
+    chartMessage += '------------------------------------------------\n';
+    chartMessage += `Total: ${totalAmount}`;
+
+    return {
+      message: chartMessage,
+    };
+  } catch (err) {
+    console.log({ message: 'err in currentDayTotalExpansesDetails', err: err });
+  }
+};
+
+export const TotalMontlyExpansesDetails = async (messageObject: MessageObjectType) => {
+  try {
+    const access_token = await checkAccessToken(messageObject);
+    const date = new Date();
+    const sheetTitle = `${getCurrentMonth(date)}-${getCurrentYear(date)}-expense`;
+    const sheetrange = `${sheetTitle}!A:E`;
+    const user_id = retrieveChatId(messageObject);
+    const spreadSheetId = user_id && (await getSpreadSheetFromDb(user_id));
+    const req = {
+      range: sheetrange,
+      accessToken: access_token,
+      spreadSheetId: spreadSheetId,
+    };
+    const data: any = await getDataFromSpecificSheet(req);
+
+    let totalAmount = 0;
+    const Expenses: string[] = [];
+
+    // Iterate through the rows and sum up today's amounts
+    for (let i = 2; i < data.length; i++) {
+      // Start from 1 to skip header
+      const row = data[i];
+      console.log('row', row);
+      const rowDate = row[0];
+      const category = row[1];
+      const amount = parseFloat(row[2]) || 0; // Assuming amount is in the third column
+      const paymentMethod = row[3];
+
+      totalAmount += amount;
+      Expenses.push(`${rowDate} | ${category} | ${amount} | ${paymentMethod}`);
+    }
+    // Create the chart representation
+    let chartMessage = 'Monthly Expenses:\n';
+    chartMessage += 'date            | Category    | Amount | Payment Method\n';
+    chartMessage += '------------------------------------------------\n';
+    Expenses.forEach((expense) => {
+      chartMessage += `${expense}\n`;
+    });
+    chartMessage += '------------------------------------------------\n';
+    chartMessage += `Total: ${totalAmount}`;
+    return {
+      message: chartMessage,
+    };
+  } catch (err) {
+    console.log({ message: 'err in TotalMontlyExpansesDetails', err: err });
+  }
+};
 const addSheet = async (req: any) => {
   try {
     const { access_token, sheetTitle, spreadsheetId, sheetId } = req;
@@ -300,10 +436,27 @@ export const dailyExpenseValues = (req: any) => {
     console.log({ message: 'err in dailyExpenseValues', err: err });
   }
 };
-
 export const getDataFromSpecificSheet = async (req: any) => {
   try {
-    const { range, accessToken, spreadSheetId, messageObject } = req;
+    const { range, accessToken, spreadSheetId } = req;
+    console.log('req---------------->', req);
+    const getGoogleAuthData = getGoogleAuth(accessToken);
+    const params = {
+      range: range,
+      spreadsheetId: spreadSheetId,
+      auth: getGoogleAuthData,
+    };
+    const getSpreadsheet = await getFromSheetsUingGoogleSdk(params);
+    console.log('getSpreadsheet--------->>', getSpreadsheet);
+    return getSpreadsheet;
+  } catch (err) {
+    console.log({ message: 'err in getDataFromSpecificSheet---------------->>>>' });
+    return null;
+  }
+};
+export const getDateDataFromSpecificSheet = async (req: any) => {
+  try {
+    const { range, accessToken, spreadSheetId } = req;
     console.log('req---------------->', req);
     const getGoogleAuthData = getGoogleAuth(accessToken);
     const params = {
@@ -320,7 +473,7 @@ export const getDataFromSpecificSheet = async (req: any) => {
     console.log('extractDates----->', extractDates);
     return extractDates;
   } catch (err) {
-    console.log({ message: 'err in getDataFromSpecificSheet---------------->>>>' });
+    console.log({ message: 'err in getDateDataFromSpecificSheet---------------->>>>' });
     return null;
   }
 };

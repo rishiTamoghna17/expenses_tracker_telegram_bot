@@ -1,5 +1,6 @@
 import { getAxiosInstance } from '../lib/axios';
 import { getGoogleAuth, getNewUrl } from '../lib/google_auth';
+import { MessageObjectType } from '../types';
 import {
   TOdayDate,
   checkAccessToken,
@@ -9,14 +10,17 @@ import {
   userName,
 } from '../utils';
 import {
+  TotalMontlyExpansesDetails,
   addExpenses,
   createSpreadSheetProcess,
+  currentDayTotalExpanses,
+  currentDayTotalExpansesDetails,
   editExpenses,
   getDataFromSpecificSheet,
   getSpreadSheet,
   syncEmail,
 } from './messageHandler';
-export const sendMessage = async (messageObject: any, messageText: string) => {
+export const sendMessage = async (messageObject: MessageObjectType, messageText: string) => {
   try {
     const axiosInstance = getAxiosInstance();
     const response =
@@ -33,9 +37,10 @@ export const sendMessage = async (messageObject: any, messageText: string) => {
   }
 };
 
-export const handleMessage = async (messageObject: any) => {
+export const handleMessage = async (messageObject: MessageObjectType) => {
   try {
     const messageText = messageObject.text || '';
+    console.log('messageObject------->>>>>>', messageObject);
     if (messageText[0] === '/') {
       const commend = messageText.substr(1).split(' ')[0];
       switch (commend) {
@@ -77,7 +82,20 @@ export const handleMessage = async (messageObject: any) => {
             messageObject,
             `${getSpreadsheet?.message} \n The spreadsheet url is: ${getSpreadsheet?.data}`,
           );
-
+        case 'today_total_expense_amount':
+          const totalExpanses = await currentDayTotalExpanses(messageObject);
+          return await sendMessage(messageObject, totalExpanses?.message);
+        case 'today_expense_detail':
+          const totalExpanseDetails = await currentDayTotalExpansesDetails(messageObject);
+          return (
+            totalExpanseDetails && (await sendMessage(messageObject, totalExpanseDetails?.message))
+          );
+        case 'total_monthly_expense_amount':
+          const totalMonthlyExpanseDetails = await TotalMontlyExpansesDetails(messageObject);
+          return (
+            totalMonthlyExpanseDetails &&
+            (await sendMessage(messageObject, totalMonthlyExpanseDetails?.message))
+          );
         case 'test':
           // console.log('user name-------->>', userName(messageObject));
           // const test = await getDataFromSpecificSheet({ messageObject: messageObject });

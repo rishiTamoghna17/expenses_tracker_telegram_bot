@@ -13,13 +13,13 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 app.get('*', async (req: Request, res: Response) => {
-  return res.send(await handler(req, 'GET'));
+  return res.send(await handler(req, res, 'GET'));
 
   // res.send("Welcome to Expense Tracker App");
 });
 app.post('*', async (req: Request, res: Response) => {
   // console.log(req.body);
-  return res.send(await handler(req, 'POST'));
+  return res.send(await handler(req, res, 'POST'));
 });
 
 app.listen(port, () => {
