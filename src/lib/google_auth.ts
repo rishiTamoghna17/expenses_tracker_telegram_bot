@@ -115,8 +115,6 @@ export async function getUserDetail(data: {
         },
       },
     );
-    console.log('response---------->>>>>>', response.data);
-
     return response.data;
   } catch (error) {
     console.log('error in getUserEmail', error);

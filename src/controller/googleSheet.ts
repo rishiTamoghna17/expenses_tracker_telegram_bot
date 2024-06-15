@@ -6,7 +6,6 @@ export async function createSpreadsheet(req: any) {
     access_token: string;
     sheetTitle: string;
   };
-  console.log('title----------------------->>', title);
   try {
     const url = 'https://sheets.googleapis.com/v4/spreadsheets';
     const asiosData = {
@@ -58,11 +57,9 @@ export async function createSheet(req: any) {
     ];
 
     const response = await batchUpdate(spreadsheetId, access_token, requests);
-    console.log('New sheet created successfully:', response);
     return response;
   } catch (error) {
-    console.error('Error creating sheet:', error);
-    throw error; // Re-throw for handling in your application
+    console.error('Error creating sheet:', error); // Re-throw for handling in your application
   }
 }
 
@@ -193,7 +190,7 @@ export async function editSpreadsheet(
     await batchUpdate(spreadsheetId, access_token, requestsForAddConditionalFormatRule);
     await batchUpdate(spreadsheetId, access_token, requestsForUpdateCells);
   } catch (error) {
-    console.error('Error updating sheet formatting:', error);
+    console.log('Error updating sheet formatting:', error);
   }
 }
 export const batchUpdate = async (spreadsheetId: string, access_token: string, requests: any) => {
@@ -213,7 +210,6 @@ export const batchUpdate = async (spreadsheetId: string, access_token: string, r
 
     const updateResponse = await axios(batchUpdateConfig);
     if (updateResponse.status === 200) {
-      console.log('Sheet formatting updated successfully!');
       return updateResponse.data;
     } else {
       console.error('Error updating sheet formatting--:', updateResponse);
@@ -238,7 +234,6 @@ export async function readSheetValues(spreadsheetId: string, access_token: strin
       },
     };
     const res = await axios(axiosCOnfig);
-    console.log('res of readsheetvalues-->', res.data);
     return res.data && res;
   } catch (err) {
     console.log('problem exios call readSheetValues:-----', err);
@@ -313,12 +308,9 @@ export const appendRow = async (req: any) => {
     const response = await axios(appendConfig);
     // If background color is specified, set it for the appended row
 
-    console.log('Row appended successfully:', response.data);
-
     return response.data;
   } catch (err) {
-    console.error('Error appending row to sheet:', err);
-    throw err; // Rethrow the error to handle it outside of this function if needed
+    console.log('Error appending row to sheet:', err);
   }
 };
 
@@ -342,14 +334,13 @@ export const getAllSheetIds = async (spreadsheetId: string, accessToken: string)
 
     return sheetIds;
   } catch (err) {
-    console.error('Error fetching sheet IDs:', err);
-    throw err;
+    console.log('Error fetching sheet IDs:', err);
   }
 };
 export const getLatestSheetId = async (spreadsheetId: string, accessToken: string) => {
   try {
     const sheetIds = await getAllSheetIds(spreadsheetId, accessToken);
-    const latestSheetId = sheetIds[sheetIds.length - 1];
+    const latestSheetId = sheetIds && sheetIds[sheetIds.length - 1];
     return latestSheetId;
   } catch (err) {
     console.error('Error fetching latest sheet IDs:', err);
@@ -372,13 +363,12 @@ export const getSheetName = async (spreadsheetId: string, accessToken: string) =
 
     const response = await axios(sheetInfoConfig);
     const sheets = response.data.sheets;
-    console.log(sheets);
     return sheets; // returns [
     //   { properties: { sheetId: 0, title: 'Sheet1' } },
     //   { properties: { sheetId: 1090302361, title: 'Sheet2' } },
     //   { properties: { sheetId: 1852600385, title: 'Sheet3' } }
     // ]
   } catch (err) {
-    console.error('Error fetching sheet name:', err);
+    console.log('Error fetching sheet name:', err);
   }
 };

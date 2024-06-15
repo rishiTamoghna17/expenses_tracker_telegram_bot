@@ -108,7 +108,6 @@ export const editSpreadsheetUingGoogleSdk = (req: any) => {
       requestBody: { requests: requests },
     });
 
-    console.log('Sheet updated successfully:', response);
     return (response as any)?.data;
   } catch (err) {
     console.error('Error editing sheet:', err);
