@@ -9,16 +9,11 @@ export const handler = async (req: Request, res: Response, method?: string) => {
   try {
     if (method === 'GET') {
       if (req.path === '/gtoken') {
-        console.log('get object->>>>>>', req);
         const data = req.query;
         const code = data.code;
-        console.log('code----------->', code);
 
         const refreshtoken = await getNewRefreshToken(code);
-        console.log('refreshtoken.data----------->', refreshtoken.data);
         const { refresh_token, access_token, id_token } = refreshtoken.data;
-        console.log('access_token----------->', access_token);
-        console.log('id_token----------->', id_token);
 
         const { email } = await getUserDetail({ access_token, id_token });
         await updateRefreshTokenInDB({ refresh_token: refresh_token, email: email });

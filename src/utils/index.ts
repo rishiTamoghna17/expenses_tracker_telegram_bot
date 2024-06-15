@@ -5,7 +5,6 @@ import { MessageObjectType } from '../types';
 export const checkAccessToken = async (messageObject: any) => {
   try {
     const refreshtoken = await getRefreshTokenFromDb(messageObject);
-    console.log(`get_spread_sheet: refreshtoken: ${refreshtoken}`);
     if (!refreshtoken) {
       return sendMessage(messageObject, 'CANT GET FROM DATABASE');
     }
@@ -68,7 +67,6 @@ export const valuesFromMessage = (req: any) => {
     const messagetext = messageText.substr(1).split(' ');
     // messageObject.
     // [[date, 'Groceries', '7000', 'online', 'Daily expenses']];
-    console.log('messages---------->', messagetext);
     const messages = removeEmptyElements(messagetext);
     if (messages.length < 4) {
       return sendMessage(
@@ -78,7 +76,6 @@ export const valuesFromMessage = (req: any) => {
     }
     const dateData = TOdayDate(date);
     messages[0] = dateData;
-    console.log('new messages -------->>', messages);
     const messageArray = messages.map((message) => {
       return message.trim().toLowerCase();
     });
@@ -95,12 +92,10 @@ export const editedValuesFromMessage = (req: any) => {
     const messagetext = messageText.substr(1).split(' ');
     // messageObject.
     // [[date, 'Groceries', '7000', 'online', 'Daily expenses']];
-    console.log('messages---------->', messagetext);
     const messages = removeEmptyElements(messagetext);
     const dateData = TOdayDate(date);
     messages[0] = dateData;
     messages.splice(1, 1); // 2nd parameter means remove one item only
-    console.log('new messages -------->>', messages);
     const messageArray = messages.map((message) => {
       return message.trim().toLowerCase();
     });

@@ -16,7 +16,6 @@ import {
   currentDayTotalExpanses,
   currentDayTotalExpansesDetails,
   editExpenses,
-  getDataFromSpecificSheet,
   getSpreadSheet,
   syncEmail,
 } from './messageHandler';
@@ -29,7 +28,6 @@ export const sendMessage = async (messageObject: MessageObjectType, messageText:
         chat_id: messageObject.chat.id,
         text: messageText,
       }));
-    console.log('Message sent successfully:', response && response.data);
     return response;
   } catch (error) {
     console.error('Error from sendMessage:', error);
@@ -40,7 +38,6 @@ export const sendMessage = async (messageObject: MessageObjectType, messageText:
 export const handleMessage = async (messageObject: MessageObjectType) => {
   try {
     const messageText = messageObject.text || '';
-    console.log('messageObject------->>>>>>', messageObject);
     if (messageText[0] === '/') {
       const commend = messageText.substr(1).split(' ')[0];
       switch (commend) {
@@ -59,7 +56,6 @@ export const handleMessage = async (messageObject: MessageObjectType) => {
           const newSpreadsheet = await createSpreadSheetProcess(messageObject);
           const newSpreadsheetUrl = newSpreadsheet && newSpreadsheet.data;
           const newSpreadsheetmessage = newSpreadsheet && newSpreadsheet.message;
-          console.log('newSpreadsheet---->>', newSpreadsheet);
           return sendMessage(
             messageObject,
             `${newSpreadsheetmessage} \n The spreadsheet url is: ${newSpreadsheetUrl}`,
