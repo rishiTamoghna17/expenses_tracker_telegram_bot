@@ -77,7 +77,7 @@ export const findEmailFromTheDb = async (user_id: number) => {
   }
 };
 
-async function userExists(email: string): Promise<boolean> {
+export async function userExists(email: string): Promise<boolean> {
   try {
     const { data, error } = await supabase.from('User').select('id').eq('email_id', email);
 
