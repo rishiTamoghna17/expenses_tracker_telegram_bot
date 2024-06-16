@@ -44,8 +44,7 @@ export const syncEmail = async (messageObject: MessageObjectType): Promise<{ mes
     }
     const email = removeEmptyElements(messagetext)[1];
     const user = await userExists(email);
-
-    if (!isValidEmail(email) && !user) {
+    if (!isValidEmail(email) || !user) {
       return {
         message:
           "The email you provided is invalid or you signed in with a different account. Please check your email and try again, or ensure you're using the correct account.",
