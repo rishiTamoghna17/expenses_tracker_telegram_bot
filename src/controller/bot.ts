@@ -35,7 +35,7 @@ export const handleMessage = async (messageObject: MessageObjectType) => {
       switch (commend) {
         case 'start':
           const messages =
-            "Hi, I'm your Personal Expense Tracker. \nLet me help you manage your expenses... \n 1. you have to log in with /log_in command. \n 2. you can create spreadsheet with /creat_spread_sheet command. \n 3. you can add expenses with /new catagory amount paymentMethod. \n example: /new groceries 7000 online.\n 4. you can add expenses for specific date with /edit date catagory amount paymentMethod. \n example: /edit 24/6/2024 groceries 7000 online.\n 5. you can get spreadsheet with /get_spread_sheet command.";
+            "Hi, I'm your Personal Expense Tracker. \nLet me help you manage your expenses... \n 1. you have to log in with /log_in command. \n 2. you can create spreadsheet with /creat_spread_sheet command. \n 3. you can add expenses with /add catagory amount paymentMethod. \n example: /add groceries 7000 online.\n 4. you can add expenses for specific date with /edit date catagory amount paymentMethod. \n example: /edit 24/6/2024 groceries 7000 online.\n 5. you can get spreadsheet with /get_spread_sheet command.";
           return sendMessage(messageObject, messages);
         case 'log_in':
           const data = await getNewUrl(messageObject);

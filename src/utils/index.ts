@@ -71,7 +71,7 @@ export const valuesFromMessage = (req: any) => {
     if (messages.length < 4) {
       return sendMessage(
         messageObject,
-        `Sorry, your command looks like this : ${messageObject.text} \n your command must look like \n this: /new catagory amount paymentMethod \n example: /new groceries 7000 online ;  \n another example: /new food 500 cash.`,
+        `Sorry, your command looks like this : ${messageObject.text} \n your command must look like \n this: /add catagory amount paymentMethod \n example: /add groceries 7000 online ;  \n another example: /add food 500 cash.`,
       );
     }
     const dateData = TOdayDate(date);
