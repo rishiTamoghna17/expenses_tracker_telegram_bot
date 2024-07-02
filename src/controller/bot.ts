@@ -50,7 +50,7 @@ export const handleMessage = async (messageObject: MessageObjectType) => {
             `${newSpreadsheetmessage} \n The spreadsheet url is: ${newSpreadsheetUrl}`,
           );
 
-        case 'new':
+        case 'add':
           const addExpense = await addExpenses(messageObject);
           return (
             addExpense.tableRange && sendMessage(messageObject, 'Expenses are added successfully')
