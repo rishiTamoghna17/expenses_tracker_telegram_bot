@@ -11,12 +11,17 @@ export const handler = async (req: Request, res: Response, method?: string) => {
       if (req.path === '/gtoken') {
         const data = req.query;
         const code = data.code;
+        const state = decodeURIComponent(data?.state as string);
 
         const refreshtoken = await getNewRefreshToken(code);
         const { refresh_token, access_token, id_token } = refreshtoken.data;
 
         const { email } = await getUserDetail({ access_token, id_token });
-        await updateRefreshTokenInDB({ refresh_token: refresh_token, email: email });
+        await updateRefreshTokenInDB({
+          refresh_token: refresh_token,
+          email: email,
+          chat_Id: state,
+        });
 
         res.redirect(BOT_URL);
         return;
