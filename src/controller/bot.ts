@@ -5,9 +5,11 @@ import { checkAccessToken } from '../utils';
 import {
   TotalMontlyExpansesDetails,
   addExpenses,
+  createMonthlyExpensesMessage,
   createSpreadSheetProcess,
   currentDayTotalExpanses,
   currentDayTotalExpansesDetails,
+  currentDayTotalExpansesDetailsMessage,
   editExpenses,
   getSpreadSheet,
 } from './messageHandler';
@@ -70,12 +72,19 @@ export const handleMessage = async (messageObject: MessageObjectType) => {
           const totalExpanses = await currentDayTotalExpanses(messageObject);
           return await sendMessage(messageObject, totalExpanses?.message);
         case 'today_expense_detail':
-          const totalExpanseDetails = await currentDayTotalExpansesDetails(messageObject);
+          const { totalAmount, todayExpenses } =
+            await currentDayTotalExpansesDetails(messageObject);
+          const totalExpanseDetails = currentDayTotalExpansesDetailsMessage(
+            totalAmount,
+            todayExpenses,
+          );
           return (
             totalExpanseDetails && (await sendMessage(messageObject, totalExpanseDetails?.message))
           );
         case 'total_monthly_expense_amount':
-          const totalMonthlyExpanseDetails = await TotalMontlyExpansesDetails(messageObject);
+          const { total_amount, expenses } = await TotalMontlyExpansesDetails(messageObject);
+
+          const totalMonthlyExpanseDetails = createMonthlyExpensesMessage(total_amount, expenses);
           return (
             totalMonthlyExpanseDetails &&
             (await sendMessage(messageObject, totalMonthlyExpanseDetails?.message))

@@ -263,7 +263,12 @@ export const currentDayTotalExpanses = async (messageObject: MessageObjectType) 
   }
 };
 
-export const currentDayTotalExpansesDetails = async (messageObject: MessageObjectType) => {
+export const currentDayTotalExpansesDetails = async (
+  messageObject: MessageObjectType,
+): Promise<{
+  totalAmount: number;
+  todayExpenses: { category: string; amount: number; paymentMethod: string }[];
+}> => {
   try {
     const access_token = await checkAccessToken(messageObject);
     const date = new Date();
@@ -280,7 +285,7 @@ export const currentDayTotalExpansesDetails = async (messageObject: MessageObjec
     const todayString = TOdayDate(date);
 
     let totalAmount = 0;
-    const todayExpenses: string[] = [];
+    const todayExpenses: { category: string; amount: number; paymentMethod: string }[] = [];
 
     // Iterate through the rows and sum up today's amounts
     for (let i = 1; i < data.length; i++) {
@@ -293,15 +298,33 @@ export const currentDayTotalExpansesDetails = async (messageObject: MessageObjec
 
       if (rowDate === todayString) {
         totalAmount += amount;
-        todayExpenses.push(`${category} | ${amount} | ${paymentMethod}`);
+        todayExpenses.push({ category, amount, paymentMethod });
       }
     }
-    // Create the chart representation
+
+    return {
+      totalAmount,
+      todayExpenses,
+    };
+  } catch (err) {
+    console.log({ message: 'err in currentDayTotalExpansesDetails', err: err });
+    return {
+      totalAmount: 0,
+      todayExpenses: [],
+    };
+  }
+};
+
+export const currentDayTotalExpansesDetailsMessage = (
+  totalAmount: number,
+  todayExpenses: { category: string; amount: number; paymentMethod: string }[],
+) => {
+  try {
     let chartMessage = "Today's Expenses:\n";
     chartMessage += 'Category    | Amount | Payment Method\n';
     chartMessage += '------------------------------------------------\n';
     todayExpenses.forEach((expense) => {
-      chartMessage += `${expense}\n`;
+      chartMessage += `${expense.category} | ${expense.amount} | ${expense.paymentMethod}\n`;
     });
     chartMessage += '------------------------------------------------\n';
     chartMessage += `Total: ${totalAmount}`;
@@ -310,11 +333,16 @@ export const currentDayTotalExpansesDetails = async (messageObject: MessageObjec
       message: chartMessage,
     };
   } catch (err) {
-    console.log({ message: 'err in currentDayTotalExpansesDetails', err: err });
+    console.log({ message: 'err in createExpensesMessage', err: err });
   }
 };
 
-export const TotalMontlyExpansesDetails = async (messageObject: MessageObjectType) => {
+export const TotalMontlyExpansesDetails = async (
+  messageObject: MessageObjectType,
+): Promise<{
+  total_amount: number;
+  expenses: { date: string; category: string; amount: number; paymentMethod: string }[];
+}> => {
   try {
     const access_token = await checkAccessToken(messageObject);
     const date = new Date();
@@ -330,11 +358,12 @@ export const TotalMontlyExpansesDetails = async (messageObject: MessageObjectTyp
     const data: any = await getDataFromSpecificSheet(req);
 
     let totalAmount = 0;
-    const Expenses: string[] = [];
+    const expenses: { date: string; category: string; amount: number; paymentMethod: string }[] =
+      [];
 
-    // Iterate through the rows and sum up today's amounts
+    // Iterate through the rows and sum up the amounts
     for (let i = 2; i < data.length; i++) {
-      // Start from 1 to skip header
+      // Start from 2 to skip header
       const row = data[i];
       const rowDate = row[0];
       const category = row[1];
@@ -342,24 +371,45 @@ export const TotalMontlyExpansesDetails = async (messageObject: MessageObjectTyp
       const paymentMethod = row[3];
 
       totalAmount += amount;
-      Expenses.push(`${rowDate} | ${category} | ${amount} | ${paymentMethod}`);
+      expenses.push({ date: rowDate, category, amount, paymentMethod });
     }
-    // Create the chart representation
+
+    return {
+      total_amount: totalAmount,
+      expenses,
+    };
+  } catch (err) {
+    console.log({ message: 'err in getTotalMonthlyExpensesData', err: err });
+    return {
+      total_amount: 0,
+      expenses: [],
+    };
+  }
+};
+
+export const createMonthlyExpensesMessage = (
+  totalAmount: number,
+  expenses: { date: string; category: string; amount: number; paymentMethod: string }[],
+) => {
+  try {
     let chartMessage = 'Monthly Expenses:\n';
-    chartMessage += 'date            | Category    | Amount | Payment Method\n';
+    chartMessage += 'Date            | Category    | Amount | Payment Method\n';
     chartMessage += '------------------------------------------------\n';
-    Expenses.forEach((expense) => {
-      chartMessage += `${expense}\n`;
+    expenses.forEach((expense) => {
+      chartMessage += `${expense.date} | ${expense.category} | ${expense.amount} | ${expense.paymentMethod}\n`;
     });
     chartMessage += '------------------------------------------------\n';
     chartMessage += `Total: ${totalAmount}`;
+
     return {
       message: chartMessage,
     };
   } catch (err) {
-    console.log({ message: 'err in TotalMontlyExpansesDetails', err: err });
+    console.log({ message: 'err in createMonthlyExpensesMessage', err: err });
+    throw err; // Re-throw the error to handle it in the calling function
   }
 };
+
 const addSheet = async (req: any) => {
   try {
     const { access_token, sheetTitle, spreadsheetId, sheetId } = req;

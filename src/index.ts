@@ -3,6 +3,7 @@ import * as dotenv from 'dotenv';
 import bodyParser from 'body-parser';
 import { handler } from './controller';
 import cors from 'cors';
+import path from 'path';
 
 dotenv.config();
 
@@ -12,6 +13,16 @@ app.use(bodyParser.json());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
+app.use(bodyParser.json());
+
+// Serve static files from the "public" directory
+app.use(express.static(path.join(__dirname, 'view')));
+
+// Route for the home page
+app.get('/', (req: Request, res: Response) => {
+  res.sendFile(path.join(__dirname, 'view', 'index.html'));
+});
+
 app.get('*', async (req: Request, res: Response) => {
   return res.send(await handler(req, res, 'GET'));
 
