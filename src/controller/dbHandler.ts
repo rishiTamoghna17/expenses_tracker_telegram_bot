@@ -16,15 +16,20 @@ export const createUserInDb = async (params: { user_id: number; email: string })
     console.log('error to create user in db :', err);
   }
 };
-export const CreateRefreshTokenInDB = async (params: { refresh_token: string; email: string }) => {
+export const CreateRefreshTokenInDB = async (params: {
+  refresh_token: string;
+  email: string;
+  chat_Id: string;
+}) => {
   try {
-    const { refresh_token, email } = params;
+    const { refresh_token, email, chat_Id } = params;
     const { data, error } = await supabase
       .from('User')
       .insert([
         {
           email_id: email,
           refresh_token: refresh_token,
+          user_id: chat_Id,
         },
       ])
       .select();
@@ -35,26 +40,27 @@ export const CreateRefreshTokenInDB = async (params: { refresh_token: string; em
   }
 };
 
-export const updateRefreshTokenInDB = async (params: { refresh_token: string; email: string }) => {
+export const updateRefreshTokenInDB = async (params: {
+  refresh_token: string;
+  email: string;
+  chat_Id: string;
+}) => {
   try {
-    const { refresh_token, email } = params;
+    const { refresh_token, email, chat_Id } = params;
 
     // Check if the user exists
     const user = await userExists(email);
 
     if (!user) {
-      await CreateRefreshTokenInDB({ refresh_token: refresh_token, email: email });
+      await CreateRefreshTokenInDB({
+        refresh_token: refresh_token,
+        email: email,
+        chat_Id: chat_Id,
+      });
     }
 
     // Update the refresh token
-    const { error: updateError } = await supabase
-      .from('User')
-      .update({ refresh_token: refresh_token })
-      .eq('email_id', email);
-
-    if (updateError) {
-      throw updateError;
-    }
+    await supabase.from('User').update({ refresh_token: refresh_token }).eq('email_id', email);
   } catch (error) {
     console.log('Error updating refresh token in DB:', error);
     throw error; // Rethrow the error to handle it elsewhere if needed
@@ -80,10 +86,6 @@ export const findEmailFromTheDb = async (user_id: number) => {
 export async function userExists(email: string): Promise<boolean> {
   try {
     const { data, error } = await supabase.from('User').select('id').eq('email_id', email);
-
-    if (error) {
-      throw error;
-    }
 
     return !!data && data.length > 0;
   } catch (error) {

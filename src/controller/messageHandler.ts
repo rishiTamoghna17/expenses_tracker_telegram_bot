@@ -32,32 +32,6 @@ import {
 } from './googleSheet';
 import { getFromSheetsUingGoogleSdk } from './googlesheet-sdk';
 
-export const syncEmail = async (messageObject: MessageObjectType): Promise<{ message: string }> => {
-  try {
-    const messageText = (messageObject as { text: string }).text || '';
-    const messagetext = messageText.substr(1).split(' ');
-    const messages = removeEmptyElements(messagetext);
-    if (messages.length < 2) {
-      return {
-        message: `Sorry, your command must look like \n example: /sync example@gmail.com`,
-      };
-    }
-    const email = removeEmptyElements(messagetext)[1];
-    const user = await userExists(email);
-    if (!isValidEmail(email) || !user) {
-      return {
-        message:
-          "The email you provided is invalid or you signed in with a different account. Please check your email and try again, or ensure you're using the correct account.",
-      };
-    }
-    const user_id = retrieveChatId(messageObject);
-    user_id && (await createUserInDb({ user_id: user_id, email: email }));
-    return { message: 'your account is synced' };
-  } catch (error) {
-    console.log(error);
-    return { message: 'An error occurred while syncing your account' };
-  }
-};
 export const createSpreadSheetProcess = async (messageObject: MessageObjectType) => {
   try {
     const access_token = await checkAccessToken(messageObject);

@@ -15,11 +15,11 @@ datasource db {
 
 model User {
   id            Int      @id @default(autoincrement())
-  user_id       Int      @default(autoincrement())
+  user_id       Int      
   email_id      String
   refresh_token String
   is_active     Boolean  @default(false)
-  createdAt     DateTime @default(now()) // Use `now()` for automatic timestamp
+  created_at     DateTime @default(now()) // Use `now()` for automatic timestamp
 }
 
 model SpreadSheet {
@@ -27,5 +27,5 @@ model SpreadSheet {
   user_id       Int
   email_id      String
   spreadsheetId String
-  createdAt     DateTime @default(now()) // Use `now()` for automatic timestamp
+  created_at     DateTime @default(now()) // Use `now()` for automatic timestamp
 }

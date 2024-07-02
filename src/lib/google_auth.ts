@@ -2,7 +2,9 @@ import axios from 'axios';
 import { client_id, client_secret, googleCredential, redirect_uris } from '../config';
 import { OAuth2Client } from 'google-auth-library';
 import { google } from 'googleapis';
-export const getNewUrl = async () => {
+import { MessageObjectType } from '../types';
+import { retrieveChatId } from '../utils';
+export const getNewUrl = async (messageObject: MessageObjectType) => {
   try {
     // const scopes = [
     //   'https://www.googleapis.com/auth/spreadsheets',
@@ -18,7 +20,8 @@ export const getNewUrl = async () => {
     // prompt=consent
     // `;
     // return await axios.get(url);
-
+    const user_id = retrieveChatId(messageObject);
+    if (!user_id) return;
     const options = {
       redirect_uri: googleCredential.web.redirect_uris[0],
       client_id: googleCredential.web.client_id,
@@ -30,6 +33,7 @@ export const getNewUrl = async () => {
         'https://www.googleapis.com/auth/userinfo.email',
         'https://www.googleapis.com/auth/spreadsheets',
       ].join(' '),
+      state: encodeURIComponent(user_id.toString()), // Add your message here
     };
 
     const qs = new URLSearchParams(options);
