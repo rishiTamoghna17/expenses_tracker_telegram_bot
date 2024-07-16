@@ -1,6 +1,7 @@
 # Monthly Expenses Tracker 🚀
 
-## Description:
+## Description
+
 Welcome to *Monthly Expenses Tracker* bot! This Telegram bot helps you manage your daily expenses by taking commands and editing a spreadsheet accordingly. It's a convenient tool to keep track of your spending and stay on top of your finances.
 
 ## Features
@@ -21,18 +22,21 @@ Welcome to *Monthly Expenses Tracker* bot! This Telegram bot helps you manage yo
 ## Installation
 
 1. **Clone the repository:**
+
     ```bash
     git clone https://github.com/yourusername/expense-tracker-bot.git
     cd expense-tracker-bot
     ```
 
 2. **Install dependencies:**
+
     ```bash
     npm install
     ```
 
 3. **Set up environment variables:**
     Create a `.env` file in the root directory and add your Telegram bot token and Google Sheets API credentials.
+
     ```env
         `telegram secret`
     BOT_TOKEN=your_telegram_bot_token
@@ -48,6 +52,7 @@ Welcome to *Monthly Expenses Tracker* bot! This Telegram bot helps you manage yo
     ```
 
 4. **Run the bot:**
+
     ```bash
     npm start
     ```
@@ -58,16 +63,18 @@ Welcome to *Monthly Expenses Tracker* bot! This Telegram bot helps you manage yo
 
 When you start the bot, you'll see the following message:
 
-
 ### Commands
 
 - **/log_in**: Log in to your account.
 - **/create_spread_sheet**: Create a new spreadsheet for tracking expenses.
-- **/add category amount paymentMethod**: Add an expense.
+- **/new category amount paymentMethod**: New an expense.
   - Example: `/add groceries 7000 online`
 - **/edit date category amount paymentMethod**: Edit an expense for a specific date.
   - Example: `/edit 24/6/2024 groceries 7000 online`
 - **/get_spread_sheet**: Retrieve the current expense spreadsheet.
+- **/today_total_expense_amount** - get total expense
+- **/today_expense_detail** - to get today's all expense detail
+- **/total_monthly_expense_amount** - to get total expense in a month.
 
 ## Contributing
 
@@ -75,17 +82,23 @@ Contributions are welcome! Please fork the repository and create a pull request 
 
 1. **Fork the repository.**
 2. **Create a new branch:**
+
     ```bash
     git checkout -b feature/your-feature-name
     ```
+
 3. **Commit your changes:**
+
     ```bash
     git commit -m 'Add some feature'
     ```
+
 4. **Push to the branch:**
+
     ```bash
     git push origin feature/your-feature-name
     ```
+
 5. **Open a pull request.**
 
 ## License
@@ -99,4 +112,4 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 ## Contact
 
-For any questions or suggestions, feel free to open an issue or contact me at tamoghna171099@gmail.com.
+For any questions or suggestions, feel free to open an issue or contact me at <tamoghna171099@gmail.com>.
